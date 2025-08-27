@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title id="appTitle">ImprimePDF</title>
+    <link rel="stylesheet" href="../css/top-bar.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/alert.css">
+  </head>
+  <body>
+
+    <header class="chrome-bar">
+      <div class="descriptions">
+        <img src="../images/icon.png" alt="ícone" />
+        <span id="windowTitle">ImprimePDF</span>
+      </div>
+      <div class="tab-bar">
+        <div class="window-buttons">
+          <div class="minimise">
+            <button id="btnMinimize">
+              <img src="../images/windows-minimise.png" alt="minimizar" />
+            </button>
+          </div>
+          <div class="close">
+            <button id="btnClose">
+              <img src="../images/windows-close.png" alt="sair" />
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <section class="home">
+      <label>Selecione o arquivo Excel:</label>
+      <div class="input-search">
+        <button id="search-btn" class="btn">Procurar</button>
+        <span id="placeholder">Nenhum arquivo selecionado</span>
+        <span id="new-placeholder"></span>
+      </div>
+      <small id="error" class="error"></small>
+
+      <label for="input-order">Número do pedido:</label>
+      <input name="input-order" id="input-order" placeholder="9674 - MAGAZINE LUIZA SA" />
+      <small id="error2" class="error2"></small>
+
+      <button id="next-btn" class="btn btn-next">Avançar ></button>
+    </section>
+
+    <section class="action-page">
+      <button id="previous-btn" class="btn btn-previous">< Voltar</button>
+
+      <label for="printers-select">Selecione a impressora:</label>
+      <select name="printers" id="printers-select" class="printer-input"></select>
+      <button id="print-btn" class="btn btn-print">Imprimir</button>
+    </section>
+
+    <section class="det-page">
+      <button id="det-previous-btn" class="btn btn-previous">< Voltar</button>
+
+      <label for="input-det">Digite o número de detalhamentos <br />do código <b id="detValue"></b>:</label>
+      <input type="number" name="input-det" id="input-det" />
+      <button class="btn" id="det-btn">Salvar</button>
+    </section>
+
+    <div class="alert-container"></div>
+
+    <script src="../../utils/window.js"></script>
+    <script src="../../utils/actions.js"></script>
+    <script src="../../utils/alerts.js"></script>
+    <script src="../../utils/app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,30 @@
+{
+  "name": "imprime-etiquetas",
+  "version": "0.0.1",
+  "description": "Software desktop que tem como objetivo imprimir etiquetas de diversos tipos e tamanhos",
+"scripts": {
+    "build": "rmdir dist /S /Q 2>nul & tsc && mkdir dist\\dist && xcopy src\\public dist\\public /E /I /H && xcopy src\\resources dist\\resources /E /I /H && xcopy src\\.dist dist /E /I /H && copy src\\config.json dist\\config.json /Y",
+    "build:prod": "npm run build && cd dist && npm install && npm run build:prod && npm run config:prod",
+    "start:dev": "npm run build && electron ./dist/main.js"
+  },
+  "keywords": [
+    "Electron",
+    "typescript"
+  ],
+  "author": "Daniel Rodrigues de Vargas",
+  "devDependencies": {
+    "@electron-forge/cli": "^7.3.0",
+    "@types/node": "^20.14.10",
+    "copyfiles": "^2.4.1",
+    "electron": "^28.1.0",
+    "globals": "^15.8.0",
+    "mkdirp": "^3.0.1",
+    "rimraf": "^6.0.1",
+    "typescript": "^4.8.3"
+  },
+  "dependencies": {
+    "fs": "^0.0.1-security",
+    "pdf-lib": "^1.17.1",
+    "pdf-to-printer": "^5.6.0"
+  }
+}

@@ -1,0 +1,106 @@
+.alert-container {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: end;
+    max-width: 300px;
+    top: 42px;
+    right: 20px;
+    z-index: 2;
+}
+
+.alert {
+    display: inline;
+    padding: 12px 24px 12px 24px;
+    border-radius: 5px;
+    box-shadow: -9px 10px 27px -1px rgba(0, 0, 0, 0.24);
+    margin-bottom: 7px;
+}
+
+.alert.option {
+    display: flex;
+    flex-direction: column;
+}
+
+.alert .btn-container {
+    display: flex;
+    justify-content: end;
+    gap: 6px;
+    margin-top: 7px;
+}
+
+.alert .btn-container button {
+    color: #eee;
+    background-color: #fd2e2e;
+    padding: 3px 11px;
+    font-size: 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.success {
+    background-color: rgb(180 255 171);
+    border-left: 4px solid rgb(94, 255, 0);
+    animation: slide-left 5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+
+.notice {
+    background-color: rgb(148 148 148);
+    border-left: 4px solid rgb(47, 47, 47);
+    animation: slide-left 5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+
+.erro {
+    background-color: rgb(255, 125, 125);
+    border-left: 4px solid rgb(255, 0, 0);
+    animation: slide-left-erro 5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+
+.simple-erro {
+    background-color: rgb(255, 125, 125);
+    border-left: 4px solid rgb(255, 0, 0);
+    animation: slide-left 5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+
+.remove {
+    opacity: 0;
+    display: none;
+    transition: 1s;
+}
+
+span {
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 12px;
+}
+
+@keyframes slide-left {
+    0% {
+        transform: translateX(200px);
+        opacity: 1;
+    }
+    10% {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    90% {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    100% {
+        transform: translateX(0);
+        opacity: 0;
+    }
+}
+
+@keyframes slide-left-erro {
+    0% {
+        transform: translateX(200px);
+    }
+    10% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(0);
+    }
+}

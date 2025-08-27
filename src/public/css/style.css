@@ -1,0 +1,183 @@
+* {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: sans-serif;
+    background-color: #eee;
+    overflow: hidden;
+}
+
+header,
+section {
+    user-select: none !important;
+}
+
+img {
+    user-select: none;
+    pointer-events: none;
+}
+
+/* /////////// Tipografia /////////// */
+span,
+a,
+p,
+h1,
+h2,
+h3,
+input {
+    font-family: "Segoe UI", "Roboto", sans-serif;
+    cursor: default;
+}
+
+/* /////////// main /////////// */
+section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100vh;
+}
+
+section .btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 3px;
+    background-color: #1689fc;
+    color: #fff;
+    cursor: pointer;
+}
+
+section .btn:hover {
+    background-color: #55a8fc;
+    transition: 0.3s;
+}
+
+section .btn.btn-next {
+    position: absolute;
+    bottom: 30px;
+    right: 30px;
+}
+
+section .btn.btn-previous {
+    position: absolute;
+    top: 60px;
+    left: 30px;
+}
+
+section.home p {
+    margin-bottom: 15px;
+}
+
+section.home .input-search {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 10px 18px;
+    background-color: #fff;
+    border: 2px solid #fff;
+    border-radius: 4px;
+    max-width: 400px;
+    max-height: 51px;
+    overflow: hidden;
+    margin-top: 8px;
+}
+
+section.home .input-search #placeholder {
+    color: #929292;
+    margin-left: 10px;
+    white-space: nowrap;
+}
+
+section.home .input-search #new-placeholder {
+    display: none;
+    color: #111213;
+    margin-left: 10px;
+    white-space: nowrap;
+}
+
+section.action-page {
+    position: absolute;
+    top: 0;
+    left: 100%;
+    background-color: #eee;
+    transition: all 0.5s ease 0s;
+    z-index: 2
+}
+
+section.action-page label {
+    margin-top: 60px;
+}
+
+section.action-page .printer-input {
+    padding: 5px 18px;
+    background-color: #fff;
+    border-radius: 4px;
+    border: 1px solid rgb(233, 233, 233);
+    width: 300px;
+    height: 35px;
+    margin: 15px 0;
+    overflow: hidden;
+    cursor: pointer;
+    text-align: center;
+}
+
+section.action-page .printer-input {
+    outline: 0;
+}
+
+section.det-page {
+    position: absolute;
+    top: 0;
+    left: 100%;
+    background-color: #eee;
+    transition: all 0.5s ease 0s;
+    z-index: 3;
+}
+
+label {
+    text-align: center;
+    margin-top: 20px;
+}
+
+input {
+    padding: 5px 18px;
+    background-color: #fff;
+    border-radius: 4px;
+    border: 1px solid rgb(233, 233, 233);
+    width: 290px;
+    height: 35px;
+    margin: 8px 0 0;
+    overflow: hidden;
+    cursor: text;
+    text-align: center;
+    outline-color: #1689fc;
+    text-transform: uppercase;
+}
+
+input::-webkit-inner-spin-button,
+input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+}
+
+.det-page .btn {
+    margin-top: 15px;
+}
+
+.error,
+.error2 {
+    display: block;
+    color: red;
+    margin-top: 6px;
+    height: 0;
+    transition: .4s;
+}
+
+.error:not(:empty),
+.error2:not(:empty) {
+    height: 15px;
+    margin-bottom: -10px;
+}
