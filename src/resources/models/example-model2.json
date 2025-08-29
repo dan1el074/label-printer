@@ -1,0 +1,14 @@
+{
+    "title": "40x40x2 - código de barra",
+    "width": 50,
+    "height": 30,
+    "collum": 2,
+    "variables": [
+        {"name": "title"},
+        {"name": "code", "max": 3}
+    ],
+    "body": [
+        {"type": "text", "value": "%title%"},
+        {"type": "barcode", "value": "%code%", "max": 3}
+    ]
+}

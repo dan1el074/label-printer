@@ -1,5 +1,5 @@
 {
-  "dev": false,
+  "dev": true,
   "version": "0.0.1",
   "tmpFile": ""
 }
