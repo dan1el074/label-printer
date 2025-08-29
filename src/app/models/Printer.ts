@@ -1,4 +1,4 @@
-import {log} from "../services/logService";
+import { log } from "../services/logService";
 import printer = require('pdf-to-printer');
 
 export class Printer implements Printable {

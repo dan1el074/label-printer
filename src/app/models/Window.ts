@@ -1,4 +1,4 @@
-import {BrowserWindow} from "electron";
+import { BrowserWindow } from "electron";
 import * as path from "path";
 
 export class Window {
