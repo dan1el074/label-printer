@@ -14,18 +14,18 @@ export class Application {
 
     constructor() {
         this.data = {
-            printers: [],
+            printerList: [],
+            modelList: [],
             temporaryFile: path.join(__dirname, '../resources/temp/result.pdf'),
+            selectModel: null
         };
 
         let options: Array<string> = [
             'app/minimize',
             'app/close',
             'action/showDialog',
-            'action/setDET',
-            'action/saveDETs',
-            'action/getCodes',
-            'app/start',
+            // 'action/getCodes',
+            // 'app/start',
         ];
 
         options.forEach((option: string): void => {
@@ -38,31 +38,14 @@ export class Application {
     public async init() {
         await this.readConfigFile();
         await this.createResultPath();
-        await app.whenReady();
-        // this.window = new Window(this.configData.dev);
-        this.window = new Window(true);
-        await this.window.loadIndex();
-        this.actionFromBackend('app/setTitle', this.configData.version);
+        await app.whenReady().then(async () => {
+            this.window = new Window(this.configData.dev);
+            await this.window.loadIndex();
+            this.actionFromBackend('app/setTitle', this.configData.version);
+        });
 
-        try {
-            const printers = await getPrinters();
-
-            this.data.printers = printers;
-            const NameOfPrinters = this.data.printers.map(
-                (printer) => ' ' + printer.name,
-            );
-            log(`Impressoras encontradas:${NameOfPrinters}`);
-
-            let printerNames: Array<string> = [];
-            this.data.printers.forEach((printer: Printable): void => {
-                printerNames.push(printer.name);
-            });
-
-            this.actionFromBackend('set/printers', printerNames);
-        } catch (error) {
-            log(error);
-            this.actionFromBackend('message/error', error);
-        }
+        await this.getPrintModels();
+        await this.getPrinters();
     }
 
     private async copyFileIfNotExists() {
@@ -72,6 +55,24 @@ export class Application {
             );
         } catch (error) {
             log(error);
+        }
+    }
+
+    private async readConfigFile(): Promise<void> {
+        try {
+            const configPath = path.join(__dirname, '../config.json');
+            const data = await fs.readFile(configPath, 'utf8');
+            const configData = JSON.parse(data);
+            this.configData = {
+                dev: configData.dev,
+                version: configData.version,
+                tmpFile: configData.tmpFile,
+            };
+
+            let message = `Arquivo de configuração: {${getSpan()}    dev: ${configData.dev},${getSpan()}    version: ${configData.version},${getSpan()}}`;
+            log(message);
+        } catch (error) {
+            console.error('Erro ao ler o arquivo de configuração:', error);
         }
     }
 
@@ -94,21 +95,50 @@ export class Application {
         }
     }
 
-    private async readConfigFile(): Promise<void> {
+    private async getPrintModels(): Promise<void> {
         try {
-            const configPath = path.join(__dirname, '../config.json');
-            const data = await fs.readFile(configPath, 'utf8');
-            const configData = JSON.parse(data);
-            this.configData = {
-                dev: configData.dev,
-                version: configData.version,
-                tmpFile: configData.tmpFile,
-            };
+            const modelsPath = path.join(__dirname, '../resources/models');
+            const files = await fs.readdir(modelsPath);
+            const jsonFiles = files.filter(file => file.endsWith('.json'));
 
-            let message = `Arquivo de configuração: {${getSpan()}    dev: ${configData.dev},${getSpan()}    version: ${configData.version},${getSpan()}}`;
-            log(message);
+            this.data.modelList = jsonFiles;
+            log(`Modelos de impressão encontrados:${jsonFiles}`);
+
+            const modelsList: Array<PrintModel> = await Promise.all(
+                jsonFiles.map(async file => {
+                    const filePath = path.join(modelsPath, file);
+                    const content = await fs.readFile(filePath, 'utf-8');
+                    return JSON.parse(content);
+                })
+            );
+
+            const modelsName = modelsList.map(currentModel => currentModel.title)
+
+            this.actionFromBackend('set/models', modelsName);
         } catch (error) {
-            console.error('Erro ao ler o arquivo de configuração:', error);
+            console.error('Erro ao encontrar a pasta de modelos:', error);
+        }
+    }
+
+    private async getPrinters(): Promise<void> {
+        try {
+            const printers = await getPrinters();
+
+            this.data.printerList = printers;
+            const NameOfPrinters = this.data.printerList.map(
+                (printer) => ' ' + printer.name,
+            );
+            log(`Impressoras encontradas:${NameOfPrinters}`);
+
+            let printerNames: Array<string> = [];
+            this.data.printerList.forEach((printer: Printable): void => {
+                printerNames.push(printer.name);
+            });
+
+            this.actionFromBackend('set/printers', printerNames);
+        } catch (error) {
+            log(error);
+            this.actionFromBackend('message/error', error);
         }
     }
 
@@ -129,11 +159,17 @@ export class Application {
             case 'action/showDialog': {
                 ipcMain.on(route, async () => {
                     try {
-                        const arr: Array<string> = await this.getPath();
-                        // TODO: poder importart arquivos de template para as etiquetas, de preferência .json ou customizado
-                        // this.data.path = arr[0];
-                        // this.data.fileName = arr[1];
-                        // this.actionFromBackend('set/fileName', this.data.fileName)
+                        const arrayModels: Array<string> = await this.getPath();
+                        this.data.newModelPath = arrayModels[0];
+                        this.data.newModelFileName = arrayModels[1];
+                        this.actionFromBackend('set/fileName', this.data.newModelFileName)
+
+                        // TODO: incluir novo modelo somente se o usuário clicar em *AVANÇAR*
+                        const destinationPath = path.join(__dirname, '../resources/models');
+                        const filesNumberInPath = await fs.readdir(destinationPath)
+                        await fs.copyFile(this.data.newModelPath, `${destinationPath}/custom-model${filesNumberInPath.length - 2}.json`);
+
+                        this.getPrintModels();
                     } catch (error) {
                         log(error);
                     }
@@ -170,8 +206,6 @@ export class Application {
     }
 
     private async getPath(): Promise<Array<string>> {
-        // TODO: usar para importar modelos de etiqueta!
-
         return new Promise(async (resolve, reject) => {
             let dialogPath = await dialog.showOpenDialog({
                 defaultPath: app.getPath('desktop'),
@@ -180,7 +214,7 @@ export class Application {
                 filters: [
                     {
                         name: 'Excel',
-                        extensions: ['xlsx', 'xls'],
+                        extensions: ['json'],
                     },
                 ],
             });
@@ -254,16 +288,13 @@ export class Application {
     }
 
     private startApplication(printer: string): Promise<void> {
-        return new Promise((resolve, reject) => {
-            if (this.running) {
+        if (this.running) {
+            return new Promise((resolve, reject) => {
                 reject('Aplicação ainda não foi finalizada!');
-                return;
-            }
+            });
+        }
 
-            this.running = true;
-
-            // TODO: implementar aplicação!
-            resolve();
-        });
+        this.running = true;
+        // TODO: implementar aplicação!
     }
 }

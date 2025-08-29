@@ -8,7 +8,7 @@ export class Window {
 
     constructor(devMode?:boolean) {
         this.options = {
-            title: 'ImprimePDF',
+            title: 'Imprime Etiquetas',
             icon: path.join(__dirname, '../../public/images/icon.ico'),
             width: 560,
             height: 340,
