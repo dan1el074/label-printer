@@ -1,10 +1,10 @@
-import { app, Menu, ipcMain, dialog, shell } from "electron";
-import { Window} from "../app/models/Window";
-import { log, getSpan } from "../app/services/logService"
-import { getPrinters } from "../app/services/printerService";
-import { exec } from "child_process";
-import * as path from "path";
-import fs = require("fs/promises");
+import { app, Menu, ipcMain, dialog, shell } from 'electron';
+import { Window } from '../app/models/Window';
+import { log, getSpan } from '../app/services/logService';
+import { getPrinters } from '../app/services/printerService';
+import { exec } from 'child_process';
+import * as path from 'path';
+import fs = require('fs/promises');
 
 export class Application {
     private data: Data;
@@ -25,55 +25,52 @@ export class Application {
             'action/setDET',
             'action/saveDETs',
             'action/getCodes',
-            'app/start'
+            'app/start',
         ];
 
         options.forEach((option: string): void => {
             this.actionFromFrontend(option);
-        })
+        });
 
         this.hideMenu();
     }
 
-    public init(): void {
-        this.readConfigFile()
-            .then((): void => {
-                this.createResultPath()
-                    .then((): void => {
-                        app.whenReady()
-                            .then(async (): Promise<void> => {
-                                this.window = new Window(this.configData.dev);
-                                await this.window.loadIndex();
+    public async init() {
+        await this.readConfigFile();
+        await this.createResultPath();
+        await app.whenReady();
+        // this.window = new Window(this.configData.dev);
+        this.window = new Window(true);
+        await this.window.loadIndex();
+        this.actionFromBackend('app/setTitle', this.configData.version);
 
-                                this.actionFromBackend("app/setTitle", this.configData.version);
+        try {
+            const printers = await getPrinters();
 
-                                getPrinters()
-                                    .then(printers => {
-                                        this.data.printers = printers;
-                                        const NameOfPrinters = this.data.printers.map(printer => ' ' + printer.name)
-                                        log(`Impressoras encontradas:${NameOfPrinters}`);
+            this.data.printers = printers;
+            const NameOfPrinters = this.data.printers.map(
+                (printer) => ' ' + printer.name,
+            );
+            log(`Impressoras encontradas:${NameOfPrinters}`);
 
-                                        let printerNames: Array<string> = [];
-                                        this.data.printers.forEach((printer: Printable): void => {
-                                            printerNames.push(printer.name);
-                                        })
+            let printerNames: Array<string> = [];
+            this.data.printers.forEach((printer: Printable): void => {
+                printerNames.push(printer.name);
+            });
 
-                                        this.actionFromBackend('set/printers', printerNames)
-                                    })
-                                    .catch(error => {
-                                        log(error);
-                                        this.actionFromBackend('message/error', error);
-                                    });
-                            })
-                    })
-            })
-            .catch(erro => log(erro));
+            this.actionFromBackend('set/printers', printerNames);
+        } catch (error) {
+            log(error);
+            this.actionFromBackend('message/error', error);
+        }
     }
 
     private async copyFileIfNotExists() {
         try {
-            exec('mkdir "%APPDATA%\\ImprimeEtiqueta\\temp" "%APPDATA%\\ImprimeEtiqueta\\logs"');
-        } catch(error) {
+            exec(
+                'mkdir "%APPDATA%\\ImprimeEtiqueta\\temp" "%APPDATA%\\ImprimeEtiqueta\\logs"',
+            );
+        } catch (error) {
             log(error);
         }
     }
@@ -105,8 +102,8 @@ export class Application {
             this.configData = {
                 dev: configData.dev,
                 version: configData.version,
-                tmpFile: configData.tmpFile
-            }
+                tmpFile: configData.tmpFile,
+            };
 
             let message = `Arquivo de configuração: {${getSpan()}    dev: ${configData.dev},${getSpan()}    version: ${configData.version},${getSpan()}}`;
             log(message);
@@ -130,16 +127,16 @@ export class Application {
                 break;
             }
             case 'action/showDialog': {
-                ipcMain.on(route, () => {
-                    this.getPath()
-                        .then((arr: Array<string>): void => {
-                            // TODO: poder importart arquivos de template para as etiquetas, de preferência .json ou customizado
-                            // this.data.path = arr[0];
-                            // this.data.fileName = arr[1];
-                            // this.actionFromBackend('set/fileName', this.data.fileName)
-                        }).catch(error => {
+                ipcMain.on(route, async () => {
+                    try {
+                        const arr: Array<string> = await this.getPath();
+                        // TODO: poder importart arquivos de template para as etiquetas, de preferência .json ou customizado
+                        // this.data.path = arr[0];
+                        // this.data.fileName = arr[1];
+                        // this.actionFromBackend('set/fileName', this.data.fileName)
+                    } catch (error) {
                         log(error);
-                    });
+                    }
                 });
                 break;
             }
@@ -148,9 +145,10 @@ export class Application {
                     this.startApplication(printer)
                         .then(() => {
                             this.running = false;
-                        }).catch(error => {
-                        log(error);
-                    });
+                        })
+                        .catch((error) => {
+                            log(error);
+                        });
                 });
                 break;
             }
@@ -160,9 +158,8 @@ export class Application {
     private actionFromBackend(route: string, message?: string | Array<string>): void {
         if (message) {
             this.window.mainWindow.webContents.send(route, message);
-            return
+            return;
         }
-
         this.window.mainWindow.webContents.send(route);
     }
 
@@ -177,84 +174,96 @@ export class Application {
 
         return new Promise(async (resolve, reject) => {
             let dialogPath = await dialog.showOpenDialog({
-                defaultPath: app.getPath("desktop"),
+                defaultPath: app.getPath('desktop'),
                 title: 'Selecione o arquivo:',
                 buttonLabel: 'Selecionar',
                 filters: [
                     {
                         name: 'Excel',
-                        extensions: ['xlsx', 'xls']
-                    }
+                        extensions: ['xlsx', 'xls'],
+                    },
                 ],
             });
 
             if (dialogPath.canceled) {
-                this.actionFromBackend('action/closeDialog')
+                this.actionFromBackend('action/closeDialog');
                 reject('Operação cancelada');
             }
 
-            const folderPath = String(dialogPath.filePaths).replace("\\\\", "\\");
-            const arrayFolder = folderPath.split("\\");
+            const folderPath = String(dialogPath.filePaths).replace(
+                '\\\\',
+                '\\',
+            );
+            const arrayFolder = folderPath.split('\\');
             const fileName = arrayFolder[arrayFolder.length - 1];
             let filePath: string;
             filePath = folderPath;
 
-            if (arrayFolder[1] === "metaro-server") {
-                filePath = "\\" + folderPath;
+            if (arrayFolder[1] === 'metaro-server') {
+                filePath = '\\' + folderPath;
             }
 
-            this.actionFromBackend('action/closeDialog')
+            this.actionFromBackend('action/closeDialog');
             resolve([filePath, fileName]);
-        })
+        });
     }
 
     private async saveToPdf(): Promise<void> {
         setTimeout((): void => {
-            this.actionFromBackend('message/success', 'Processando arquivo')
-        }, 500)
+            this.actionFromBackend('message/success', 'Processando arquivo');
+        }, 500);
 
-        await dialog.showSaveDialog({
-            title: 'Salvar arquivo',
-            defaultPath: app.getPath("desktop"),
-            filters: [
-                {name: 'Text Files', extensions: ['pdf']}
-            ]
-        }).then(async result => {
-            if (!result.canceled) {
-                let currentFilePath: string = result.filePath;
-                log(`Caminho para salvar arquivo: ${currentFilePath}`);
+        const result = await dialog.showSaveDialog({
+                title: 'Salvar arquivo',
+                defaultPath: app.getPath('desktop'),
+                filters: [{ name: 'Text Files', extensions: ['pdf'] }],
+            })
 
-                try {
-                    await fs.copyFile(this.data.temporaryFile, currentFilePath);
-                    await shell.openPath(currentFilePath);
-                    log('Arquivo copiado com sucesso!');
-                    setTimeout((): void => {
-                        this.actionFromBackend('message/success', 'Arquivo salvo com sucesso!')
+        if (result.canceled) {
+            log('Diálogo de salvar cancelado');
+            return;
+        }
 
-                    }, 500)
-                    return
-                } catch (error) {
-                    log(`Erro ao copiar o arquivo: ${error}`);
-                    setTimeout((): void => {
-                        this.actionFromBackend('message/simpleError', 'Erro ao copiar o arquivo!')
-                    }, 500)
-                    return;
-                }
-            } else {
-                log('Diálogo de salvar cancelado');
-            }
-        })
+        let currentFilePath: string = result.filePath;
+        log(`Caminho para salvar arquivo: ${currentFilePath}`);
+
+        try {
+            await fs.copyFile(
+                this.data.temporaryFile,
+                currentFilePath,
+            );
+            await shell.openPath(currentFilePath);
+            log('Arquivo copiado com sucesso!');
+            setTimeout((): void => {
+                this.actionFromBackend(
+                    'message/success',
+                    'Arquivo salvo com sucesso!',
+                );
+            }, 500);
+            return;
+        } catch (error) {
+            log(`Erro ao copiar o arquivo: ${error}`);
+            setTimeout((): void => {
+                this.actionFromBackend(
+                    'message/simpleError',
+                    'Erro ao copiar o arquivo!',
+                );
+            }, 500);
+            return;
+        }
     }
 
     private startApplication(printer: string): Promise<void> {
         return new Promise((resolve, reject) => {
             if (this.running) {
                 reject('Aplicação ainda não foi finalizada!');
-                return
+                return;
             }
+
             this.running = true;
-        
+
             // TODO: implementar aplicação!
-        })
+            resolve();
+        });
     }
 }
