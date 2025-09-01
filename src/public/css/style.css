@@ -1,3 +1,4 @@
+/* ///////////// Reset //////////// */
 * {
     padding: 0;
     margin: 0;
@@ -21,19 +22,15 @@ img {
 }
 
 /* /////////// Tipografia /////////// */
-span,
-a,
-p,
-h1,
-h2,
-h3,
-input {
+a, p, h1, h2, h3,
+span, input {
     font-family: "Segoe UI", "Roboto", sans-serif;
     cursor: default;
 }
 
-/* /////////// main /////////// */
+/* //////////// main //////////// */
 section {
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -42,7 +39,7 @@ section {
     height: 100vh;
 }
 
-section .btn {
+.btn {
     padding: 8px 16px;
     border: none;
     border-radius: 3px;
@@ -51,68 +48,15 @@ section .btn {
     cursor: pointer;
 }
 
-section .btn:hover {
+.btn:hover {
     background-color: #55a8fc;
     transition: 0.3s;
 }
 
-section .btn.btn-next {
-    position: absolute;
-    bottom: 30px;
-    right: 30px;
-}
-
-section .btn.btn-previous {
+.btn.previous {
     position: absolute;
     top: 60px;
     left: 30px;
-}
-
-section.home p {
-    margin-bottom: 15px;
-}
-
-section.home .input-search {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    padding: 10px 18px;
-    background-color: #fff;
-    border: 2px solid #fff;
-    border-radius: 4px;
-    min-width: 288px;
-    max-width: 400px;
-    max-height: 51px;
-    overflow: hidden;
-    margin-top: 8px;
-}
-
-section.home .input-search #placeholder {
-    color: #929292;
-    margin-left: 10px;
-    white-space: nowrap;
-}
-
-section.home .input-search #new-placeholder {
-    display: none;
-    width: 100%;
-    margin-left: 10px;
-    color: #111213;
-    text-align: center;
-    white-space: nowrap;
-}
-
-section.action-page {
-    position: absolute;
-    top: 0;
-    left: 100%;
-    background-color: #eee;
-    transition: all 0.5s ease 0s;
-    z-index: 2
-}
-
-section.action-page label {
-    margin-top: 60px;
 }
 
 .input {
@@ -133,15 +77,6 @@ section.action-page label {
     display: none;
 }
 
-section.det-page {
-    position: absolute;
-    top: 0;
-    left: 100%;
-    background-color: #eee;
-    transition: all 0.5s ease 0s;
-    z-index: 3;
-}
-
 label {
     text-align: center;
     margin-top: 16px;
@@ -151,7 +86,7 @@ input {
     padding: 5px 18px;
     background-color: #fff;
     border-radius: 4px;
-    border: 1px solid rgb(233, 233, 233);
+    border: 2px solid #fff;
     width: 290px;
     height: 35px;
     margin: 8px 0 0;
@@ -167,21 +102,75 @@ input::-webkit-outer-spin-button {
     -webkit-appearance: none;
 }
 
-.det-page .btn {
-    margin-top: 15px;
-}
-
-.error,
-.error2 {
-    display: block;
+.error {
     color: red;
-    margin-top: 6px;
+    margin-bottom: 6px;
     height: 0;
     transition: .4s;
+    overflow: hidden;
 }
 
-.error:not(:empty),
-.error2:not(:empty) {
-    height: 15px;
-    margin-bottom: -10px;
+/* /////////// home page /////////// */
+.home p {
+    margin-bottom: 15px;
+}
+
+.home .input-search {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 10px 18px;
+    background-color: #fff;
+    border: 2px solid #fff;
+    border-radius: 4px;
+    min-width: 288px;
+    max-width: 400px;
+    max-height: 51px;
+    overflow: hidden;
+    margin-top: 8px;
+}
+
+.home .input-search #placeholder {
+    color: #929292;
+    margin-left: 10px;
+    white-space: nowrap;
+}
+
+.home .input-search #new-placeholder {
+    display: none;
+    width: 100%;
+    margin-left: 10px;
+    color: #111213;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.btn.next {
+    position: absolute;
+    bottom: 30px;
+    right: 30px;
+}
+
+/* /////////// config page /////////// */
+.config-page {
+    position: absolute;
+    top: 0;
+    left: 100%;
+    background-color: #eee;
+    transition: all 0.5s ease 0s;
+    z-index: 2
+}
+
+/* /////////// print page /////////// */
+.print-page {
+    position: absolute;
+    top: 0;
+    left: 100%;
+    background-color: #eee;
+    transition: all 0.5s ease 0s;
+    z-index: 3
+}
+
+.print-page label {
+    margin-top: 60px;
 }

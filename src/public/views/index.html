@@ -33,10 +33,10 @@
 
     <section class="home">
       <label for="print-model-select">Modelo de impressão:</label>
-      <select id="print-model-select" class="input print-model">
+      <select id="print-model-select" class="input">
         <option class="hidden" value="none" disabled selected>Selecione</option>
       </select>
-      <small id="print-model-error" class="error"></small>
+      <small id="print-model-error" class="error">Selecione um modelo!</small>
 
       <label>Novo modelo de impressão:</label>
       <div class="input-search">
@@ -45,11 +45,19 @@
         <span id="new-placeholder"></span>
       </div>
 
-      <button id="next-btn" class="btn btn-next">Avançar ></button>
+      <button id="config-page-btn" class="btn next">Avançar ></button>
     </section>
 
-    <section class="action-page">
-      <button id="previous-btn" class="btn btn-previous">< Voltar</button>
+    <section class="config-page">
+      <button id="previous-home-btn" class="btn previous">< Voltar</button>
+
+      <label for="printers-select">Selecione a impressora:</label>
+      <select id="printers-select" class="printer-input"></select>
+      <button id="print-btn" class="btn print">Imprimir</button>
+    </section>
+
+    <section class="print-page">
+      <button id="previous-btn" class="btn previous">< Voltar</button>
 
       <label for="printers-select">Selecione a impressora:</label>
       <select
@@ -57,14 +65,14 @@
         id="printers-select"
         class="printer-input"
       ></select>
-      <button id="print-btn" class="btn btn-print">Imprimir</button>
+      <button id="print-btn" class="btn print">Imprimir</button>
     </section>
 
     <div class="alert-container"></div>
 
     <script src="../../utils/window.js"></script>
+    <script src="../../utils/app.js"></script>
     <script src="../../utils/actions.js"></script>
     <script src="../../utils/alerts.js"></script>
-    <script src="../../utils/app.js"></script>
   </body>
 </html>

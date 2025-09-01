@@ -1,18 +1,66 @@
-const actionPage: HTMLElement = document.querySelector('.action-page');
-// const nextBtn: HTMLElement = document.getElementById('next-btn');
-// const previousBtn: HTMLElement = document.getElementById('previous-btn');
-// const detPreviousBtn: HTMLElement = document.getElementById('det-previous-btn');
-// let firstAccess = true;
+let modelSelect: HTMLSelectElement = document.getElementById('print-model-select') as HTMLSelectElement;
+const placeholder: HTMLElement = document.getElementById('placeholder');
+const newPlaceholder: HTMLElement = document.getElementById('new-placeholder');
+const inputSearch: HTMLElement = document.querySelector('.input-search');
+const configPageBtn: HTMLElement = document.getElementById('config-page-btn');
+const printModelError: HTMLElement = document.getElementById('print-model-error');
+const configPage: HTMLElement = document.querySelector('.config-page');
+const previousHomeBtn: HTMLElement = document.getElementById('previous-home-btn');
 
-printModelSelect.addEventListener('change', () => {
+modelSelect.addEventListener('change', () => {
+    modelSelect.style.border = "1px solid #fff";
+    printModelError.style.height = "0px";
     placeholder.style.display = 'inline';
+    newPlaceholder.innerHTML = ""
     newPlaceholder.style.display = 'none';
-    printModelError.style.display = 'none';
 });
+
+inputSearch.addEventListener('click', () => {
+    if (showDialog) {
+        ipcRenderer.send('action/showDialog');
+        showDialog = false;
+    }
+});
+
+configPageBtn.addEventListener('click', async () => {
+    const fileName = document.getElementById('new-placeholder').innerHTML;
+
+    if(!fileName && modelSelect.value == "none") {
+        printModelError.style.display = "inline";
+        printModelError.style.height = "15px";
+        modelSelect.style.border = "2px solid red";
+        return;
+    }
+
+    if (fileName) {
+        // "addNewModel" roda "getConfigInput" depois que terminar
+        ipcRenderer.send('action/addNewModel')
+    } else {
+        ipcRenderer.send('action/getConfigInput', modelSelect.value);
+    }
+
+    configPage.style.transform = 'translateX(-100%)';
+    setTimeout(() => {
+        newPlaceholder.innerHTML = "";
+        newPlaceholder.style.display = 'none';
+        placeholder.style.display = 'inline';
+    }, 600);
+});
+
+previousHomeBtn.addEventListener('click', () => {
+    configPage.style.transform = 'translateX(100%)';
+})
+
+// printBtn.addEventListener('click', () => {
+//     const chosenPrinter: HTMLSelectElement = document.querySelector('#printers-select');
+//     ipcRenderer.send('app/start', chosenPrinter.value);
+//     printBtn.style.backgroundColor = '#00E500';
+//     printBtn.style.transition = '1s';
+// });
 
 // inputOrder.addEventListener('keypress', (event) => {
 //     if (event.key === 'Enter') {
-//         nextBtn.click();
+//         configPageBtn.click();
 //     }
 // });
 
@@ -26,45 +74,6 @@ printModelSelect.addEventListener('change', () => {
 
 //             printBtn.click();
 //         }
-//     }
-// });
-
-// nextBtn.addEventListener('click', () => {
-//     const fileSpan: HTMLElement = document.getElementById('new-placeholder');
-//     let validatedOrder = false;
-//     let validatedFile = false;
-
-//     if (!fileSpan.innerHTML) {
-//         inputSearch.style.border = '2px solid red';
-//         error.style.display = 'block';
-//         error.innerHTML = 'Selecione um arquivo!';
-//         return
-//     }
-
-//     if (fileSpan.innerHTML) {
-//         inputSearch.style.border = '2px solid #fff';
-//         error.style.display = 'none';
-//         validatedFile = true;
-//     }
-
-//     if (!inputOrder.value) {
-//         inputOrder.style.border = '2px solid red';
-//         error2.innerHTML = 'Digite o número do pedido!';
-//         return
-//     }
-
-//     if (inputOrder.value) {
-//         validatedOrder = true;
-//     }
-
-//     if (validatedOrder && validatedFile) {
-//         inputOrder.style.border = '2px solid #fff';
-//         error2.innerHTML = '';
-//         actionPage.style.transform = 'translateX(-100%)';
-//         ipcRenderer.send('action/getCodes', inputOrder.value.toUpperCase());
-//         setTimeout(() => {
-//             printersSelect.focus();
-//         }, 300)
 //     }
 // });
 
@@ -86,23 +95,4 @@ printModelSelect.addEventListener('change', () => {
 // printBtn.addEventListener('blur', () => {
 //     printBtn.style.backgroundColor = '#1689fc';
 //     printBtn.style.transition = '1s';
-// });
-
-// detPreviousBtn.addEventListener('click', () => {
-//     printBtn.style.backgroundColor = '#1689fc';
-//     detPage.style.transform = 'translateX(100%)';
-//     actionPage.style.transform = 'translateX(100%)';
-//     alertContainer.innerHTML = '';
-//     firstAccess = true;
-
-//     setTimeout(() => {
-//         detInput.value = '';
-//     }, 300)
-// })
-
-// detPage.addEventListener('keypress', (event) => {
-//     if (event.key === 'Enter') {
-//         saveDetAndPrint.click();
-//         return
-//     }
 // });

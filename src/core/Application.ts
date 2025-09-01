@@ -24,8 +24,8 @@ export class Application {
             'app/minimize',
             'app/close',
             'action/showDialog',
-            // 'action/getCodes',
-            // 'app/start',
+            'action/addNewModel',
+            'action/getConfigInput'
         ];
 
         options.forEach((option: string): void => {
@@ -163,32 +163,52 @@ export class Application {
                         this.data.newModelPath = arrayModels[0];
                         this.data.newModelFileName = arrayModels[1];
                         this.actionFromBackend('set/fileName', this.data.newModelFileName)
-
-                        // TODO: incluir novo modelo somente se o usuário clicar em *AVANÇAR*
-                        const destinationPath = path.join(__dirname, '../resources/models');
-                        const filesNumberInPath = await fs.readdir(destinationPath)
-                        await fs.copyFile(this.data.newModelPath, `${destinationPath}/custom-model${filesNumberInPath.length - 2}.json`);
-
-                        this.getPrintModels();
                     } catch (error) {
                         log(error);
                     }
                 });
                 break;
             }
-            case 'app/start': {
-                ipcMain.on(route, (_event, printer: string): void => {
-                    this.startApplication(printer)
-                        .then(() => {
-                            this.running = false;
-                        })
-                        .catch((error) => {
-                            log(error);
-                        });
+            case 'action/addNewModel': {
+                ipcMain.on(route, async () => {
+                    const destinationPath = path.join(__dirname, '../resources/models');
+                    const filesNumberInPath = await fs.readdir(destinationPath);
+                    const newFile = `${destinationPath}/custom-model${filesNumberInPath.length - 2}.json`;
+                    await fs.copyFile(this.data.newModelPath, newFile);
+
+                    // TODO: emitir uma notificação de erro "Já existe um modelo com esse mesmo título!"
+
+                    await this.getPrintModels();
+                    await this.setModelPrintByFilePath(newFile);
+                    this.actionFromBackend('set/printModel', this.data.selectModel.title);
+                    this.getConfigInput(this.data.selectModel.title);
+                });
+                break;
+            }
+            case 'action/getConfigInput': {
+                ipcMain.on(route, (_event, modelTitle: string): void => {
+                    this.getConfigInput(modelTitle);
                 });
                 break;
             }
         }
+    }
+
+    private async setModelPrintByFilePath(filePath: string) {
+        try {
+            const content = await fs.readFile(filePath, 'utf-8');
+            this.data.selectModel = JSON.parse(content);
+        } catch (error) {
+           log('Erro ao encontrar modelo: ' + error);
+        }
+    }
+
+    private async getConfigInput(modelTitle: string) {
+        // TODO: pegar o modelo atual!
+        log("---------- debug ----------");
+        log(modelTitle);
+
+        // TODO: chamar o "set/modelConfig" passando as configurações de modelo;
     }
 
     private actionFromBackend(route: string, message?: string | Array<string>): void {
