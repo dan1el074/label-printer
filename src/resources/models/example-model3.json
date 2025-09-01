@@ -1,8 +1,8 @@
 {
     "title": "30x30x3 - código de barra",
-    "width": 50,
+    "width": 30,
     "height": 30,
-    "collum": 2,
+    "collum": 3,
     "variables": [
         {"name": "title"},
         {"name": "code", "max": 3}
