@@ -5,7 +5,7 @@
     "scripts": {
         "build": "rmdir dist /S /Q 2>nul & tsc && mkdir dist\\dist && xcopy src\\public dist\\public /E /I /H && xcopy src\\resources dist\\resources /E /I /H && xcopy src\\.dist dist /E /I /H && copy src\\config.json dist\\config.json /Y && npx terser dist/core/Application.js -o dist/core/Application.js --compress drop_console,drop_debugger,unused,collapse_vars,sequences,reduce_funcs,toplevel --mangle --toplevel --comments false && npx terser dist/main.js -o dist/main.js --compress drop_console,drop_debugger,unused,collapse_vars,sequences,reduce_funcs,toplevel --mangle --toplevel --comments false",
         "build:prod": "npm run build && cd dist && npm install && npm run build:prod && npm run config:prod && npm run clean-dist",
-        "start:dev": "npm run build && electron ./dist/main.js"
+        "start:dev": "npm run build & cls && electron ./dist/main.js"
     },
     "keywords": [
         "Electron",
