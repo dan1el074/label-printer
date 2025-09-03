@@ -25,6 +25,7 @@ export class Application {
             'app/close',
             'action/showDialog',
             'action/addNewModel',
+            'action/reset',
             'action/getConfigInput'
         ];
 
@@ -101,10 +102,9 @@ export class Application {
             const files = await fs.readdir(modelsPath);
             const jsonFiles = files.filter(file => file.endsWith('.json'));
 
-            this.data.modelList = jsonFiles;
             log(`Modelos de impressão encontrados:${jsonFiles}`);
 
-            const modelsList: Array<PrintModel> = await Promise.all(
+            this.data.modelList = await Promise.all(
                 jsonFiles.map(async file => {
                     const filePath = path.join(modelsPath, file);
                     const content = await fs.readFile(filePath, 'utf-8');
@@ -112,7 +112,7 @@ export class Application {
                 })
             );
 
-            const modelsName = modelsList.map(currentModel => currentModel.title)
+            const modelsName = this.data.modelList.map(currentModel => currentModel.title)
 
             this.actionFromBackend('set/models', modelsName);
         } catch (error) {
@@ -140,6 +140,10 @@ export class Application {
             log(error);
             this.actionFromBackend('message/error', error);
         }
+    }
+
+    private resetApplication(): void {
+        this.data.selectModel = null;
     }
 
     private actionFromFrontend(route: string) {
@@ -191,6 +195,12 @@ export class Application {
                 });
                 break;
             }
+            case 'action/reset': {
+                ipcMain.on(route, (): void => {
+                    this.resetApplication();
+                });
+                break;
+            }
         }
     }
 
@@ -204,14 +214,14 @@ export class Application {
     }
 
     private async getConfigInput(modelTitle: string) {
-        // TODO: pegar o modelo atual!
-        log("---------- debug ----------");
-        log(modelTitle);
+        this.data.modelList.forEach(model => {
+            if(model.title == modelTitle) this.data.selectModel = model
+        })
 
-        // TODO: chamar o "set/modelConfig" passando as configurações de modelo;
+        this.actionFromBackend('set/modelConfig', this.data.selectModel)
     }
 
-    private actionFromBackend(route: string, message?: string | Array<string>): void {
+    private actionFromBackend(route: string, message?: string | PrintModel | Array<string>): void {
         if (message) {
             this.window.mainWindow.webContents.send(route, message);
             return;
@@ -262,59 +272,59 @@ export class Application {
         });
     }
 
-    private async saveToPdf(): Promise<void> {
-        setTimeout((): void => {
-            this.actionFromBackend('message/success', 'Processando arquivo');
-        }, 500);
+    // private async saveToPdf(): Promise<void> {
+    //     setTimeout((): void => {
+    //         this.actionFromBackend('message/success', 'Processando arquivo');
+    //     }, 500);
 
-        const result = await dialog.showSaveDialog({
-                title: 'Salvar arquivo',
-                defaultPath: app.getPath('desktop'),
-                filters: [{ name: 'Text Files', extensions: ['pdf'] }],
-            })
+    //     const result = await dialog.showSaveDialog({
+    //             title: 'Salvar arquivo',
+    //             defaultPath: app.getPath('desktop'),
+    //             filters: [{ name: 'Text Files', extensions: ['pdf'] }],
+    //         })
 
-        if (result.canceled) {
-            log('Diálogo de salvar cancelado');
-            return;
-        }
+    //     if (result.canceled) {
+    //         log('Diálogo de salvar cancelado');
+    //         return;
+    //     }
 
-        let currentFilePath: string = result.filePath;
-        log(`Caminho para salvar arquivo: ${currentFilePath}`);
+    //     let currentFilePath: string = result.filePath;
+    //     log(`Caminho para salvar arquivo: ${currentFilePath}`);
 
-        try {
-            await fs.copyFile(
-                this.data.temporaryFile,
-                currentFilePath,
-            );
-            await shell.openPath(currentFilePath);
-            log('Arquivo copiado com sucesso!');
-            setTimeout((): void => {
-                this.actionFromBackend(
-                    'message/success',
-                    'Arquivo salvo com sucesso!',
-                );
-            }, 500);
-            return;
-        } catch (error) {
-            log(`Erro ao copiar o arquivo: ${error}`);
-            setTimeout((): void => {
-                this.actionFromBackend(
-                    'message/simpleError',
-                    'Erro ao copiar o arquivo!',
-                );
-            }, 500);
-            return;
-        }
-    }
+    //     try {
+    //         await fs.copyFile(
+    //             this.data.temporaryFile,
+    //             currentFilePath,
+    //         );
+    //         await shell.openPath(currentFilePath);
+    //         log('Arquivo copiado com sucesso!');
+    //         setTimeout((): void => {
+    //             this.actionFromBackend(
+    //                 'message/success',
+    //                 'Arquivo salvo com sucesso!',
+    //             );
+    //         }, 500);
+    //         return;
+    //     } catch (error) {
+    //         log(`Erro ao copiar o arquivo: ${error}`);
+    //         setTimeout((): void => {
+    //             this.actionFromBackend(
+    //                 'message/simpleError',
+    //                 'Erro ao copiar o arquivo!',
+    //             );
+    //         }, 500);
+    //         return;
+    //     }
+    // }
 
-    private startApplication(printer: string): Promise<void> {
-        if (this.running) {
-            return new Promise((resolve, reject) => {
-                reject('Aplicação ainda não foi finalizada!');
-            });
-        }
+    // private startApplication(printer: string): Promise<void> {
+    //     if (this.running) {
+    //         return new Promise((resolve, reject) => {
+    //             reject('Aplicação ainda não foi finalizada!');
+    //         });
+    //     }
 
-        this.running = true;
-        // TODO: implementar aplicação!
-    }
+    //     this.running = true;
+    //     // TODO: implementar aplicação!
+    // }
 }

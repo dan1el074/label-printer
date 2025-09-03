@@ -1,6 +1,6 @@
 interface Data {
     printerList: Array<Printable>;
-    modelList: Array<string>;
+    modelList: Array<PrintModel>;
     selectModel: PrintModel | null;
     temporaryFile: string;
     newModelPath?: string;

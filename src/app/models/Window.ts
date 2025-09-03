@@ -10,10 +10,10 @@ export class Window {
         this.options = {
             title: 'Imprime Etiquetas',
             icon: path.join(__dirname, '../../public/images/icon.ico'),
-            width: 560,
-            height: 340,
-            maxWidth: 560,
-            maxHeight: 340,
+            width: 600,
+            height: 400,
+            maxWidth: 600,
+            maxHeight: 400,
             fullscreenable: false,
             resizable: false,
             frame: false,
@@ -28,7 +28,7 @@ export class Window {
             this.devMode = devMode;
             this.options.maxWidth = 9999;
             this.options.maxHeight = 9999;
-            this.options.width = 1200;
+            this.options.width = 1250;
             this.options.height = 500;
             this.options.fullscreenable = true;
             this.options.resizable = true;

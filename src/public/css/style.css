@@ -59,47 +59,50 @@ section {
     left: 30px;
 }
 
-.input {
-    padding: 5px 18px;
-    background-color: #fff;
-    border-radius: 4px;
-    border: 1px solid rgb(233, 233, 233);
-    width: 288px;
-    height: 35px;
-    margin: 8px 0;
-    overflow: hidden;
-    cursor: pointer;
-    text-align: center;
-    outline: 0;
-}
-
 .input .hidden {
     display: none;
 }
 
 label {
+    font-size: 14px;
     text-align: center;
     margin-top: 16px;
 }
 
-input {
+label::first-letter {
+    text-transform: uppercase;
+}
+
+.input, input {
     padding: 5px 18px;
     background-color: #fff;
     border-radius: 4px;
     border: 2px solid #fff;
     width: 290px;
     height: 35px;
-    margin: 8px 0 0;
+    margin: 8px 8px 0 0;
     overflow: hidden;
-    cursor: text;
     text-align: center;
     outline-color: #1689fc;
-    text-transform: uppercase;
+}
+
+.input {
+    cursor: pointer
+}
+
+input {
+    max-height: 35px;
+    cursor: text;
 }
 
 input::-webkit-inner-spin-button,
 input::-webkit-outer-spin-button {
     -webkit-appearance: none;
+}
+
+button {
+    cursor: pointer;
+    border: none;
 }
 
 .error {
@@ -154,11 +157,59 @@ input::-webkit-outer-spin-button {
 /* /////////// config page /////////// */
 .config-page {
     position: absolute;
+    align-items: left;
     top: 0;
     left: 100%;
     background-color: #eee;
     transition: all 0.5s ease 0s;
     z-index: 2
+}
+
+.config-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 12px;
+    width: 335px;
+    margin-top: 26px;
+}
+
+.config-container input {
+    margin: 0 8px 0 0;
+}
+
+.input-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.buttons {
+    margin: 4px 0;
+}
+
+.icon {
+    height: 35px;
+    background-color: #d8d8d8;
+    border-radius: 4px;
+    padding: 5px 8px 3px;
+    cursor: pointer;
+}
+
+.trash:hover {
+    background-color: #ec1f1f;
+}
+
+.add:hover {
+    background-color: #1689fc;
+}
+
+.icon:hover img {
+    filter: invert(1);
+}
+
+.icon img {
+    width: 20px;
 }
 
 /* /////////// print page /////////// */

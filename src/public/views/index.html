@@ -2,7 +2,10 @@
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'"
+    />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title id="app-title">Imprime Etiquetas</title>
     <link rel="stylesheet" href="../css/top-bar.css" />
@@ -51,12 +54,12 @@
     <section class="config-page">
       <button id="previous-home-btn" class="btn previous">< Voltar</button>
 
-      <label for="printers-select">Selecione a impressora:</label>
-      <select id="printers-select" class="printer-input"></select>
-      <button id="print-btn" class="btn print">Imprimir</button>
+      <div id="variables" class="config-container"></div>
+
+      <button id="print-page-btn" class="btn next">Avançar ></button>
     </section>
 
-    <section class="print-page">
+    <!-- <section class="print-page">
       <button id="previous-btn" class="btn previous">< Voltar</button>
 
       <label for="printers-select">Selecione a impressora:</label>
@@ -66,7 +69,7 @@
         class="printer-input"
       ></select>
       <button id="print-btn" class="btn print">Imprimir</button>
-    </section>
+    </section> -->
 
     <div class="alert-container"></div>
 
