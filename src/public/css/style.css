@@ -182,6 +182,7 @@ button {
     display: flex;
     flex-direction: row;
     align-items: center;
+    height: 43px;
 }
 
 .buttons {
