@@ -12,6 +12,10 @@ ipcRenderer.on('action/closeDialog', (): void => {
     showDialog = true;
 });
 
+ipcRenderer.on('action/reset', (_event: any, version: string): void => {
+    configPage.style.transform = 'translateX(100%)';
+});
+
 ipcRenderer.on('set/fileName', (_event: any, data: string): void => {
     placeholder.style.display = 'none';
     newPlaceholder.style.display = 'inline';
@@ -39,7 +43,7 @@ ipcRenderer.on('set/modelConfig', (_event: any, data: PrintModel): void => {
     variablesContainer.innerHTML = ""
 
     if(!data.variables.length) {
-        variablesContainer.innerHTML = '<div class="item">Nenhuma variável encontrada</div>';
+        variablesContainer.innerHTML = '<div class="item empty">Nenhuma variável encontrada</div>';
         return;
     }
 

@@ -144,6 +144,7 @@ export class Application {
 
     private resetApplication(): void {
         this.data.selectModel = null;
+        this.actionFromBackend('action/reset');
     }
 
     private actionFromFrontend(route: string) {
@@ -166,7 +167,7 @@ export class Application {
                         const arrayModels: Array<string> = await this.getPath();
                         this.data.newModelPath = arrayModels[0];
                         this.data.newModelFileName = arrayModels[1];
-                        this.actionFromBackend('set/fileName', this.data.newModelFileName)
+                        this.actionFromBackend('set/fileName', this.data.newModelFileName);
                     } catch (error) {
                         log(error);
                     }
@@ -178,14 +179,19 @@ export class Application {
                     const destinationPath = path.join(__dirname, '../resources/models');
                     const filesNumberInPath = await fs.readdir(destinationPath);
                     const newFile = `${destinationPath}/custom-model${filesNumberInPath.length - 2}.json`;
+                    const verifyModel = await this.verifyNewModel(this.data.newModelPath);
+
+                    if(!verifyModel) {
+                        this.resetApplication();
+                        return;
+                    }
+
                     await fs.copyFile(this.data.newModelPath, newFile);
-
-                    // TODO: emitir uma notificação de erro "Já existe um modelo com esse mesmo título!"
-
                     await this.getPrintModels();
                     await this.setModelPrintByFilePath(newFile);
                     this.actionFromBackend('set/printModel', this.data.selectModel.title);
                     this.getConfigInput(this.data.selectModel.title);
+                    this.actionFromBackend('message/success', 'Modelo adicionado com sucesso!');
                 });
                 break;
             }
@@ -202,6 +208,26 @@ export class Application {
                 break;
             }
         }
+    }
+
+    private async verifyNewModel(newFile: string): Promise<boolean> {
+        return new Promise(async (resolve, reject) => {
+            const content = await fs.readFile(newFile, 'utf-8');
+            const contentObj: PrintModel = await JSON.parse(content);
+
+            this.data.modelList.forEach(model => {
+                if (model.title == contentObj.title) {
+                    this.actionFromBackend(
+                        'message/error',
+                        'Já existe um modelo com esse mesmo título!'
+                    );
+                    log('Já existe um modelo com esse mesmo título!');
+                    resolve(false);
+                }
+            })
+
+            resolve(true);
+        })
     }
 
     private async setModelPrintByFilePath(filePath: string) {

@@ -9,6 +9,68 @@ const previousHomeBtn: HTMLElement = document.getElementById('previous-home-btn'
 let trashButtonList: NodeListOf<HTMLElement>;
 let addButtonList: NodeListOf<HTMLElement>;
 
+function getTrashButtonList() {
+    trashButtonList = document.querySelectorAll('.trash');
+    if(!trashButtonList) return;
+
+    trashButtonList.forEach(button => {
+        button.addEventListener('click', () => {
+            const itemIndex = button.attributes[0].value;
+            const inputIndex = button.attributes[1].value;
+            const itemContent =  document.querySelector(`[data-item="${itemIndex}"] [data-input="${inputIndex}"]`);
+
+            if (!itemContent) return;
+            itemContent.remove();
+
+            const inputList = document.querySelectorAll(`[data-item="${itemIndex}"] .input-container`);
+            const itemMax = document.querySelector(`[data-item="${itemIndex}"]`).attributes[1].value;
+
+            if (inputList.length < parseInt(itemMax)) {
+                const addBtn: HTMLElement = document.querySelector(`[data-item="${itemIndex}"] .add`);
+                addBtn.style.display = "initial";
+            }
+        })
+    });
+}
+
+function getAddButtonList() {
+    addButtonList = document.querySelectorAll('.add');
+    if(!addButtonList) return;
+
+    addButtonList.forEach(button => {
+        button.addEventListener('click', () => {
+            const itemIndex = button.attributes[0].value;
+            const inputList = document.querySelectorAll(`[data-item="${itemIndex}"] .input-container`);
+            let highestInputIndex = 0
+
+            inputList.forEach(input => {
+                if (parseInt(input.attributes[0].value) > highestInputIndex) {
+                    highestInputIndex = parseInt(input.attributes[0].value);
+                }
+            })
+
+            let inputContent = `
+                <div data-input="${highestInputIndex + 1}" class="input-container">
+                    <input type="text" placeholder="...valor" />
+
+                    <div class="buttons">
+                        <button data-item-index="${itemIndex}" data-input-index="${highestInputIndex + 1}" class="icon trash">
+                            <img src="../images/trash.svg" />
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            (button.parentNode as HTMLElement).insertAdjacentHTML('beforebegin', inputContent);
+            getTrashButtonList();
+
+            if (inputList.length + 1 >= parseInt((button.parentNode.parentNode as HTMLElement).attributes[1].value)) {
+                button.style.display = "none";
+            }
+        })
+    })
+}
+
 modelSelect.addEventListener('change', () => {
     modelSelect.style.border = "1px solid #fff";
     printModelError.style.height = "0px";
@@ -99,65 +161,3 @@ previousHomeBtn.addEventListener('click', () => {
 //     printBtn.style.backgroundColor = '#1689fc';
 //     printBtn.style.transition = '1s';
 // });
-
-function getTrashButtonList() {
-    trashButtonList = document.querySelectorAll('.trash');
-    if(!trashButtonList) return;
-
-    trashButtonList.forEach(button => {
-        button.addEventListener('click', () => {
-            const itemIndex = button.attributes[0].value;
-            const inputIndex = button.attributes[1].value;
-            const itemContent =  document.querySelector(`[data-item="${itemIndex}"] [data-input="${inputIndex}"]`);
-
-            if (!itemContent) return;
-            itemContent.remove();
-
-            const inputList = document.querySelectorAll(`[data-item="${itemIndex}"] .input-container`);
-            const itemMax = document.querySelector(`[data-item="${itemIndex}"]`).attributes[1].value;
-
-            if (inputList.length < parseInt(itemMax)) {
-                const addBtn: HTMLElement = document.querySelector(`[data-item="${itemIndex}"] .add`);
-                addBtn.style.display = "initial";
-            }
-        })
-    });
-}
-
-function getAddButtonList() {
-    addButtonList = document.querySelectorAll('.add');
-    if(!addButtonList) return;
-
-    addButtonList.forEach(button => {
-        button.addEventListener('click', () => {
-            const itemIndex = button.attributes[0].value;
-            const inputList = document.querySelectorAll(`[data-item="${itemIndex}"] .input-container`);
-            let highestInputIndex = 0
-
-            inputList.forEach(input => {
-                if (parseInt(input.attributes[0].value) > highestInputIndex) {
-                    highestInputIndex = parseInt(input.attributes[0].value);
-                }
-            })
-
-            let inputContent = `
-                <div data-input="${highestInputIndex + 1}" class="input-container">
-                    <input type="text" placeholder="...valor" />
-
-                    <div class="buttons">
-                        <button data-item-index="${itemIndex}" data-input-index="${highestInputIndex + 1}" class="icon trash">
-                            <img src="../images/trash.svg" />
-                        </button>
-                    </div>
-                </div>
-            `;
-
-            (button.parentNode as HTMLElement).insertAdjacentHTML('beforebegin', inputContent);
-            getTrashButtonList();
-
-            if (inputList.length + 1 >= parseInt((button.parentNode.parentNode as HTMLElement).attributes[1].value)) {
-                button.style.display = "none";
-            }
-        })
-    })
-}
