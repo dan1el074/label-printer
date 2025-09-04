@@ -66,7 +66,7 @@ section {
 label {
     font-size: 14px;
     text-align: center;
-    margin-top: 16px;
+    margin: 16px 0 0 8px;
 }
 
 label::first-letter {
@@ -80,7 +80,7 @@ label::first-letter {
     border: 2px solid #fff;
     width: 290px;
     height: 35px;
-    margin: 8px 8px 0 0;
+    margin-top: 8px;
     overflow: hidden;
     text-align: center;
     outline-color: #1689fc;
@@ -114,6 +114,12 @@ button {
 }
 
 /* /////////// home page /////////// */
+.home-content {
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+}
+
 .home p {
     margin-bottom: 15px;
 }
@@ -176,6 +182,10 @@ button {
 
 .config-container input {
     margin: 0 8px 0 0;
+}
+
+.config-container .empty {
+    text-align: center;
 }
 
 .input-container {

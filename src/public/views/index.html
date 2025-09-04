@@ -35,17 +35,19 @@
     </header>
 
     <section class="home">
-      <label for="print-model-select">Modelo de impressão:</label>
-      <select id="print-model-select" class="input">
-        <option class="hidden" value="none" disabled selected>Selecione</option>
-      </select>
-      <small id="print-model-error" class="error">Selecione um modelo!</small>
+      <div class="home-content">
+        <label for="print-model-select">Modelo de impressão:</label>
+        <select id="print-model-select" class="input">
+          <option class="hidden" value="none" disabled selected>Selecione</option>
+        </select>
+        <small id="print-model-error" class="error">Selecione um modelo!</small>
 
-      <label>Novo modelo de impressão:</label>
-      <div class="input-search">
-        <button id="search-btn" class="btn">Procurar</button>
-        <span id="placeholder">Nenhum arquivo selecionado</span>
-        <span id="new-placeholder"></span>
+        <label>Novo modelo de impressão:</label>
+        <div class="input-search">
+          <button id="search-btn" class="btn">Procurar</button>
+          <span id="placeholder">Nenhum arquivo selecionado</span>
+          <span id="new-placeholder"></span>
+        </div>
       </div>
 
       <button id="config-page-btn" class="btn next">Avançar ></button>
