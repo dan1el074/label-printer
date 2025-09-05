@@ -26,7 +26,9 @@ export class Application {
             'action/showDialog',
             'action/addNewModel',
             'action/reset',
-            'action/getConfigInput'
+            'action/getConfigInput',
+            'action/setModel',
+            'app/start'
         ];
 
         options.forEach((option: string): void => {
@@ -207,6 +209,23 @@ export class Application {
                 });
                 break;
             }
+            case 'action/setModel': {
+                ipcMain.on(route, (_event, newModel: PrintModel): void => {
+                    this.data.selectModel = newModel;
+                });
+                break;
+            }
+            case 'app/start': {
+                ipcMain.on(route, async (_event, printer: string) => {
+                    try {
+                        await this.start(printer);
+                        this.running = false;
+                    } catch(error) {
+                        log(error);
+                    }
+                });
+                break;
+            }
         }
     }
 
@@ -298,59 +317,7 @@ export class Application {
         });
     }
 
-    // private async saveToPdf(): Promise<void> {
-    //     setTimeout((): void => {
-    //         this.actionFromBackend('message/success', 'Processando arquivo');
-    //     }, 500);
-
-    //     const result = await dialog.showSaveDialog({
-    //             title: 'Salvar arquivo',
-    //             defaultPath: app.getPath('desktop'),
-    //             filters: [{ name: 'Text Files', extensions: ['pdf'] }],
-    //         })
-
-    //     if (result.canceled) {
-    //         log('Diálogo de salvar cancelado');
-    //         return;
-    //     }
-
-    //     let currentFilePath: string = result.filePath;
-    //     log(`Caminho para salvar arquivo: ${currentFilePath}`);
-
-    //     try {
-    //         await fs.copyFile(
-    //             this.data.temporaryFile,
-    //             currentFilePath,
-    //         );
-    //         await shell.openPath(currentFilePath);
-    //         log('Arquivo copiado com sucesso!');
-    //         setTimeout((): void => {
-    //             this.actionFromBackend(
-    //                 'message/success',
-    //                 'Arquivo salvo com sucesso!',
-    //             );
-    //         }, 500);
-    //         return;
-    //     } catch (error) {
-    //         log(`Erro ao copiar o arquivo: ${error}`);
-    //         setTimeout((): void => {
-    //             this.actionFromBackend(
-    //                 'message/simpleError',
-    //                 'Erro ao copiar o arquivo!',
-    //             );
-    //         }, 500);
-    //         return;
-    //     }
-    // }
-
-    // private startApplication(printer: string): Promise<void> {
-    //     if (this.running) {
-    //         return new Promise((resolve, reject) => {
-    //             reject('Aplicação ainda não foi finalizada!');
-    //         });
-    //     }
-
-    //     this.running = true;
-    //     // TODO: implementar aplicação!
-    // }
+    private async start(printer: string) {
+        // implementar
+    }
 }

@@ -41,6 +41,7 @@ ipcRenderer.on('set/printModel', (_event: any, data: string): void => {
 });
 
 ipcRenderer.on('set/modelConfig', (_event: any, data: PrintModel): void => {
+    printModel = data;
     variablesContainer.innerHTML = ""
 
     if(!data.variables.length) {
@@ -58,7 +59,7 @@ ipcRenderer.on('set/modelConfig', (_event: any, data: PrintModel): void => {
         if (data.variables[i].max > 1) {
             trashContent = `
                 <div class="buttons">
-                <button data-item-index="${i}" data-input-index="${0}" class="icon trash">
+                <button data-item-index="${i}" data-input-index="${0}" tabindex="-1" class="icon trash">
                 <img src="../images/trash.svg" />
                 </button>
                 </div>

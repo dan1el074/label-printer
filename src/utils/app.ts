@@ -1,4 +1,4 @@
-let modelSelect: HTMLSelectElement = document.getElementById('print-model-select') as HTMLSelectElement;
+const modelSelect: HTMLSelectElement = document.getElementById('print-model-select') as HTMLSelectElement;
 const placeholder: HTMLElement = document.getElementById('placeholder');
 const newPlaceholder: HTMLElement = document.getElementById('new-placeholder');
 const inputSearch: HTMLElement = document.querySelector('.input-search');
@@ -8,9 +8,12 @@ const configPage: HTMLElement = document.querySelector('.config-page');
 const previousHomeBtn: HTMLElement = document.getElementById('previous-home-btn');
 const printPageBtn: HTMLElement = document.getElementById('print-page-btn');
 const printPage: HTMLElement = document.querySelector('.print-page');
+const printerSelect: HTMLSelectElement = document.getElementById('printers-select') as HTMLSelectElement;
 const previousConfigBtn: HTMLElement = document.getElementById('previous-config-btn');
+const printBtn: HTMLElement = document.getElementById('print-btn');
 let trashButtonList: NodeListOf<HTMLElement>;
 let addButtonList: NodeListOf<HTMLElement>;
+let printModel: PrintModel;
 
 function getTrashButtonList() {
     trashButtonList = document.querySelectorAll('.trash');
@@ -57,7 +60,7 @@ function getAddButtonList() {
                     <input type="text" placeholder="...valor" />
 
                     <div class="buttons">
-                        <button data-item-index="${itemIndex}" data-input-index="${highestInputIndex + 1}" class="icon trash">
+                        <button data-item-index="${itemIndex}" data-input-index="${highestInputIndex + 1}" tabindex="-1" class="icon trash">
                             <img src="../images/trash.svg" />
                         </button>
                     </div>
@@ -72,6 +75,20 @@ function getAddButtonList() {
             }
         })
     })
+}
+
+function verifyInputs() {
+    for (let i=0; i<printModel.variables.length; i++) {
+        const inputList: NodeListOf<HTMLInputElement> = document.querySelectorAll(`[data-item="${i}"] input`);
+        printModel.variables[i].value = [];
+
+        inputList.forEach(input => {
+            printModel.variables[i].value.push(input.value);
+        });
+    }
+
+    console.log(printModel);
+    ipcRenderer.send('action/setModel', printModel);
 }
 
 modelSelect.addEventListener('change', () => {
@@ -121,15 +138,13 @@ previousHomeBtn.addEventListener('click', () => {
 
 printPageBtn.addEventListener('click', () => {
     printPage.style.transform = 'translateX(-100%)';
+    verifyInputs();
 })
 
 previousConfigBtn.addEventListener('click', () => {
     printPage.style.transform = 'translateX(100%)';
 })
 
-// printBtn.addEventListener('click', () => {
-//     const chosenPrinter: HTMLSelectElement = document.querySelector('#printers-select');
-//     ipcRenderer.send('app/start', chosenPrinter.value);
-//     printBtn.style.backgroundColor = '#00E500';
-//     printBtn.style.transition = '1s';
-// });
+printBtn.addEventListener('click', () => {
+    ipcRenderer.send('app/start', printerSelect.value);
+});
