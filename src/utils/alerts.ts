@@ -35,3 +35,14 @@ ipcRenderer.on('message/error', (event: any, data: string) => {
         document.getElementById(`alert${counter}`).remove();
     }, 5000);
 });
+
+ipcRenderer.on('message/breakError', (event: any, data: string) => {
+    alertCounter += 1;
+    let contador = alertCounter;
+    let div = document.createElement('div');
+    div.setAttribute('id', `alert${contador}`);
+    div.classList.add('alert', 'erro');
+    div.innerHTML = `<span>${data}</span>`;
+
+    alertContainer.appendChild(div);
+});

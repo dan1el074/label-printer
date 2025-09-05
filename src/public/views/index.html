@@ -2,10 +2,7 @@
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
-    <meta
-      http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self'"
-    />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title id="app-title">Imprime Etiquetas</title>
     <link rel="stylesheet" href="../css/top-bar.css" />
@@ -36,7 +33,7 @@
 
     <section class="home">
       <div class="home-content">
-        <label for="print-model-select">Modelo de impressão:</label>
+        <label>Modelo de impressão:</label>
         <select id="print-model-select" class="input">
           <option class="hidden" value="none" disabled selected>Selecione</option>
         </select>
@@ -61,17 +58,26 @@
       <button id="print-page-btn" class="btn next">Avançar ></button>
     </section>
 
-    <!-- <section class="print-page">
-      <button id="previous-btn" class="btn previous">< Voltar</button>
+    <section class="print-page">
+      <button id="previous-config-btn" class="btn previous">< Voltar</button>
 
-      <label for="printers-select">Selecione a impressora:</label>
-      <select
-        name="printers"
-        id="printers-select"
-        class="printer-input"
-      ></select>
-      <button id="print-btn" class="btn print">Imprimir</button>
-    </section> -->
+      <div class="print-content">
+        <label>Selecione a impressora:</label>
+        <select id="printers-select" class="input"></select>
+
+        <label>Cópias:</label>
+        <div class="copy-container">
+          <input id="copy-input" class="copy" type="number" min="0" max="9999" value="1" placeholder="...valor">
+
+          <div class="buttons">
+            <button id="print-btn" class="icon print">
+              <img src="../images/print.svg">
+              <span>Imprimir</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
 
     <div class="alert-container"></div>
 

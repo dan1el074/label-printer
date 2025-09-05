@@ -100,7 +100,7 @@ input::-webkit-outer-spin-button {
     -webkit-appearance: none;
 }
 
-button {
+button, .button {
     cursor: pointer;
     border: none;
 }
@@ -233,6 +233,54 @@ button {
     z-index: 3
 }
 
-.print-page label {
-    margin-top: 60px;
+.print-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: start;
+    width: 292px;
+    margin-top: 26px;
+}
+
+.print-content select {
+    width: 290px;
+}
+
+.copy-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    height: 43px;
+    width: 100%;
+}
+
+.copy-container {
+    display: flex;
+    justify-content: space-between;
+    width: 290px;
+}
+
+.copy-container input {
+    width: 150px;
+    margin: 0;
+}
+
+.icon.print {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+}
+
+.icon.print span {
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.print:hover {
+    background-color: #00E500;
+}
+
+.print:hover span {
+    color: #fff;
 }

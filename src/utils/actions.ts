@@ -1,4 +1,5 @@
 const appTitle: HTMLElement = document.getElementById("app-title");
+const printersSelect: HTMLElement = document.getElementById("printers-select");
 const windowTitle: HTMLElement = document.getElementById("window-title");
 const variablesContainer: HTMLElement = document.getElementById("variables");
 let showDialog: boolean = true;
@@ -89,8 +90,8 @@ ipcRenderer.on('set/modelConfig', (_event: any, data: PrintModel): void => {
     getAddButtonList();
 });
 
-// ipcRenderer.on('set/printers', (_event: any, data: Array<string>): void => {
-//     data.forEach((printer: string): void => {
-//         printersSelect.innerHTML += `<option value='${printer}'>${printer}</option>`;
-//     });
-// });
+ipcRenderer.on('set/printers', (_event: any, data: Array<string>): void => {
+    data.forEach((printer: string): void => {
+        printersSelect.innerHTML += `<option value='${printer}'>${printer}</option>`;
+    });
+});

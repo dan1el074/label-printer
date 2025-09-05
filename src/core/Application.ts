@@ -138,7 +138,7 @@ export class Application {
             this.actionFromBackend('set/printers', printerNames);
         } catch (error) {
             log(error);
-            this.actionFromBackend('message/error', error);
+            this.actionFromBackend('message/breakError', error);
         }
     }
 

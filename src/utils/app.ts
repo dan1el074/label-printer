@@ -6,6 +6,9 @@ const configPageBtn: HTMLElement = document.getElementById('config-page-btn');
 const printModelError: HTMLElement = document.getElementById('print-model-error');
 const configPage: HTMLElement = document.querySelector('.config-page');
 const previousHomeBtn: HTMLElement = document.getElementById('previous-home-btn');
+const printPageBtn: HTMLElement = document.getElementById('print-page-btn');
+const printPage: HTMLElement = document.querySelector('.print-page');
+const previousConfigBtn: HTMLElement = document.getElementById('previous-config-btn');
 let trashButtonList: NodeListOf<HTMLElement>;
 let addButtonList: NodeListOf<HTMLElement>;
 
@@ -116,48 +119,17 @@ previousHomeBtn.addEventListener('click', () => {
     configPage.style.transform = 'translateX(100%)';
 })
 
+printPageBtn.addEventListener('click', () => {
+    printPage.style.transform = 'translateX(-100%)';
+})
+
+previousConfigBtn.addEventListener('click', () => {
+    printPage.style.transform = 'translateX(100%)';
+})
+
 // printBtn.addEventListener('click', () => {
 //     const chosenPrinter: HTMLSelectElement = document.querySelector('#printers-select');
 //     ipcRenderer.send('app/start', chosenPrinter.value);
 //     printBtn.style.backgroundColor = '#00E500';
-//     printBtn.style.transition = '1s';
-// });
-
-// inputOrder.addEventListener('keypress', (event) => {
-//     if (event.key === 'Enter') {
-//         configPageBtn.click();
-//     }
-// });
-
-// document.addEventListener('keypress', (event) => {
-//     if(actionPage.style.transform === 'translateX(-100%)' || detPage.style.transform !== 'translateX(-100%)') {
-//         if (event.key === 'Enter') {
-//             if(firstAccess) {
-//                 firstAccess = false;
-//                 return;
-//             }
-
-//             printBtn.click();
-//         }
-//     }
-// });
-
-// printersSelect.addEventListener('keypress', (event) => {
-//     if (event.key === 'Enter') {
-//         event.preventDefault();
-//         printBtn.click();
-//         return
-//     }
-// });
-
-// previousBtn.addEventListener('click', () => {
-//     printBtn.style.backgroundColor = '#1689fc';
-//     actionPage.style.transform = 'translateX(100%)';
-//     alertContainer.innerHTML = '';
-//     firstAccess = true;
-// });
-
-// printBtn.addEventListener('blur', () => {
-//     printBtn.style.backgroundColor = '#1689fc';
 //     printBtn.style.transition = '1s';
 // });
