@@ -1,7 +1,8 @@
-import { app, Menu, ipcMain, dialog, shell } from 'electron';
+import { app, Menu, ipcMain, dialog } from 'electron';
 import { Window } from '../app/models/Window';
 import { log, getSpan } from '../app/services/logService';
 import { getPrinters } from '../app/services/printerService';
+import { createLabel } from '../app/services/pdfService';
 import { exec } from 'child_process';
 import * as path from 'path';
 import fs = require('fs/promises');
@@ -216,9 +217,9 @@ export class Application {
                 break;
             }
             case 'app/start': {
-                ipcMain.on(route, async (_event, printer: string) => {
+                ipcMain.on(route, async (_event, data: Array<string>) => {
                     try {
-                        await this.start(printer);
+                        await this.start(data[0], parseInt(data[1]));
                         this.running = false;
                     } catch(error) {
                         log(error);
@@ -317,7 +318,12 @@ export class Application {
         });
     }
 
-    private async start(printer: string) {
-        // implementar
+    private async start(printer: string, copyNumber: number) {
+        if (this.running) return;
+        this.running = true;
+
+        await createLabel(this.data.selectModel, this.data.temporaryFile);
+
+        // imprimir
     }
 }

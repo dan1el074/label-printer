@@ -1,30 +1,51 @@
-import { PDFDocument } from "pdf-lib";
-import fs = require("fs/promises");
+import { PDFDocument, rgb } from "pdf-lib";
+import { writeFileSync } from "fs";
+import { log } from '../../app/services/logService';
 
-export async function pdfJoin(arrayCodePath: Array<string>, temporaryFile: string): Promise<Array<Array<number>>> {
-    return new Promise(async (resolve, reject) => {
-        try {
-            const newPDF = await PDFDocument.create();
-            const repeatMapper: Array<Array<number>> = [];
+export async function createLabel(printModel: PrintModel, tempPath: string): Promise<any> {
+    const width = mmToPt(printModel.width * printModel.collumn);
+    const height = mmToPt(printModel.height);
 
-            for (let i=0; i<arrayCodePath.length; i++) {
-                const PDFFile = await fs.readFile(arrayCodePath[i]);
-                const pdf = await PDFDocument.load(PDFFile);
-                const pdfSize = await pdf.getPageCount();
+    const pdfDoc = await PDFDocument.create();
+    const page = pdfDoc.addPage([width, height]);
 
-                if(pdfSize > 1) {
-                    repeatMapper.push([i, pdfSize]);
+    // coluna
+    for (let i=0; i<printModel.collumn; i++) {
+
+        // body
+        printModel.body.forEach(content => {
+
+            // body vezes X
+            for (let j=0; j<content.value.length; j++) {
+                let message = content.value;
+
+                if (content.type == "text") {
+
+                    // variaveis
+                    for (let x=0; x<printModel.variables.length; x++) {
+
+                        // variaveis vezes X
+                        // se a variável tiver o "max" maior que 1, pegar o mesmo índice do body
+                        // message.replace(`%${printModel.variables[x].name}%`, "");
+                    }
                 }
 
-                const pages = await newPDF.copyPages(pdf, pdf.getPageIndices());
-                pages.forEach((page) => newPDF.addPage(page));
+                // page.drawText(message, {
+                //     x: mmToPt(printModel.width) * i,
+                //     y: height - 10,
+                //     size: 10,
+                //     color: rgb(0, 0, 0),
+                // });
             }
+        })
+    }
 
-            const newPDFBytes = await newPDF.save();
-            await fs.writeFile(temporaryFile, newPDFBytes);
-            resolve(repeatMapper);
-        } catch (error) {
-            reject([`Erro! Arquivo não encontrado: ${error.path}`, error.path])
-        }
-    })
+    const pdfBytes = await pdfDoc.save();
+    writeFileSync(tempPath, pdfBytes);
+
+    log("arquivo temporario atualizado!");
+}
+
+function mmToPt(mm: number): number {
+    return (mm / 25.4) * 72;
 }

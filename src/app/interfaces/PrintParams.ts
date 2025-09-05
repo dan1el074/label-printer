@@ -1,5 +1,5 @@
 interface PrintParams {
     type: string;
-    value: number;
+    value: string;
     max?: number;
 }

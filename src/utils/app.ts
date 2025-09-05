@@ -9,6 +9,7 @@ const previousHomeBtn: HTMLElement = document.getElementById('previous-home-btn'
 const printPageBtn: HTMLElement = document.getElementById('print-page-btn');
 const printPage: HTMLElement = document.querySelector('.print-page');
 const printerSelect: HTMLSelectElement = document.getElementById('printers-select') as HTMLSelectElement;
+const copyInput: HTMLInputElement = document.getElementById("copy-input") as HTMLInputElement;
 const previousConfigBtn: HTMLElement = document.getElementById('previous-config-btn');
 const printBtn: HTMLElement = document.getElementById('print-btn');
 let trashButtonList: NodeListOf<HTMLElement>;
@@ -86,8 +87,6 @@ function verifyInputs() {
             printModel.variables[i].value.push(input.value);
         });
     }
-
-    console.log(printModel);
     ipcRenderer.send('action/setModel', printModel);
 }
 
@@ -146,5 +145,5 @@ previousConfigBtn.addEventListener('click', () => {
 })
 
 printBtn.addEventListener('click', () => {
-    ipcRenderer.send('app/start', printerSelect.value);
+    ipcRenderer.send('app/start', [printerSelect.value, copyInput.value]);
 });

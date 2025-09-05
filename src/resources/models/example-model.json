@@ -9,6 +9,6 @@
     ],
     "body": [
         {"type": "text", "value": "%título%"},
-        {"type": "barcode", "value": "%código%", "max": 3}
+        {"type": "text", "value": "%código%", "max": 3}
     ]
 }
