@@ -8,7 +8,7 @@
         {"name": "teste2"}
     ],
     "body": [
-        {"type": "text", "value": "%title%"},
-        {"type": "barcode", "value": "%code%", "max": 3}
+        {"type": "text", "value": "%teste1%"},
+        {"type": "text", "value": "%teste2%"}
     ]
 }
