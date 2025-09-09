@@ -1,0 +1,26 @@
+{
+    "title": "34x23x3 - Título e descrição",
+    "width": 34,
+    "height": 23,
+    "collumn": 3,
+    "variables": [
+        {"name": "título"},
+        {"name": "código", "max": 2}
+    ],
+    "body": [
+        {"type": "text", "value": "%título%"},
+        {
+            "type": "text",
+            "value": "%código%",
+            "fontSize": 10,
+            "bold": true
+        }
+    ],
+    "options": {
+        "fontSize": 10,
+        "bold": true,
+        "lineHeight": 15,
+        "gap": 20,
+        "marginLeft": 10
+    }
+}
