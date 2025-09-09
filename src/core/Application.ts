@@ -2,7 +2,7 @@ import { app, Menu, ipcMain, dialog } from 'electron';
 import { Window } from '../app/models/Window';
 import { log, getSpan } from '../app/services/logService';
 import { getPrinters } from '../app/services/printerService';
-import { createLabel } from '../app/services/pdfService';
+import { createLabel, copyPages, openFile } from '../app/services/pdfService';
 import { exec } from 'child_process';
 import * as path from 'path';
 import fs = require('fs/promises');
@@ -17,7 +17,7 @@ export class Application {
         this.data = {
             printerList: [],
             modelList: [],
-            temporaryFile: path.join(__dirname, '../resources/temp/result.pdf'),
+            temporaryPath: path.join(__dirname, "../resources/temp/"),
             selectModel: null
         };
 
@@ -62,6 +62,17 @@ export class Application {
         }
     }
 
+    private timestamp(): string {
+        const now = new Date();
+        const timestamp = now.getFullYear() + "-" +
+            String(now.getMonth() + 1).padStart(2, "0") + "-" +
+            String(now.getDate()).padStart(2, "0") + "_" +
+            String(now.getHours()).padStart(2, "0") + "-" +
+            String(now.getMinutes()).padStart(2, "0") + "-" +
+            String(now.getSeconds()).padStart(2, "0");
+        return timestamp;
+    }
+
     private async readConfigFile(): Promise<void> {
         try {
             const configPath = path.join(__dirname, '../config.json');
@@ -70,7 +81,7 @@ export class Application {
             this.configData = {
                 dev: configData.dev,
                 version: configData.version,
-                tmpFile: configData.tmpFile,
+                tmpPath: configData.tmpPath,
             };
 
             let message = `Arquivo de configuração: {${getSpan()}    dev: ${configData.dev},${getSpan()}    version: ${configData.version},${getSpan()}}`;
@@ -84,16 +95,15 @@ export class Application {
         const appDataPath = process.env.APPDATA;
         let dirPath = path.join(appDataPath, 'ImprimeEtiqueta');
         dirPath = path.join(dirPath, 'temp');
-        const filePath = path.join(dirPath, 'result.pdf');
 
-        if (this.configData.tmpFile) {
-            this.data.temporaryFile = this.configData.tmpFile;
+        if (this.configData.tmpPath) {
+            this.data.temporaryPath = this.configData.tmpPath;
             return;
         }
 
         try {
             await this.copyFileIfNotExists();
-            this.data.temporaryFile = filePath;
+            this.data.temporaryPath = dirPath;
         } catch (err) {
             log(`Erro ao criar o caminho do resultado: ${err.message}`);
         }
@@ -237,10 +247,7 @@ export class Application {
 
             this.data.modelList.forEach(model => {
                 if (model.title == contentObj.title) {
-                    this.actionFromBackend(
-                        'message/error',
-                        'Já existe um modelo com esse mesmo título!'
-                    );
+                    this.actionFromBackend('message/error', 'Já existe um modelo com esse mesmo título!');
                     log('Já existe um modelo com esse mesmo título!');
                     resolve(false);
                 }
@@ -322,8 +329,42 @@ export class Application {
         if (this.running) return;
         this.running = true;
 
-        await createLabel(this.data.selectModel, this.data.temporaryFile);
+        const filePath = path.join(this.data.temporaryPath, `/temp_${this.timestamp()}.pdf`);
 
-        // imprimir
+        await createLabel(this.data.selectModel, filePath);
+        await copyPages(filePath, copyNumber);
+
+        if (printer == "Abrir arquivo") {
+            try {
+                await openFile(filePath);
+                this.running = false;
+
+                log("Impressão enviada com sucesso!");
+                setTimeout(() => {
+                    this.actionFromBackend('message/success', "Impressão enviada com sucesso!");
+                }, 500)
+            } catch (error) {
+                log("Erro ao imprimir: " + error);
+                setTimeout(() => {
+                    this.actionFromBackend('message/error', "Erro ao imprimir!");
+                }, 500)
+            }
+
+            return;
+        }
+
+        try {
+            let index = this.data.printerList.findIndex(data => data.name == printer);
+            await this.data.printerList[index].print(filePath);
+
+            log("Impressão enviada com sucesso!");
+            setTimeout(() => {
+                this.actionFromBackend('message/success', "Impressão enviada com sucesso!");
+            }, 500)
+        } catch(error) {
+            log(error);
+        }
+
+        this.running = false;
     }
 }
