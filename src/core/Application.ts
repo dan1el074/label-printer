@@ -330,9 +330,10 @@ export class Application {
         this.running = true;
 
         const filePath = path.join(this.data.temporaryPath, `/temp_${this.timestamp()}.pdf`);
-
         await createLabel(this.data.selectModel, filePath);
-        await copyPages(filePath, copyNumber);
+
+        let copies = Math.ceil(copyNumber / this.data.selectModel.collumn);
+        await copyPages(filePath, copies);
 
         if (printer == "Abrir arquivo") {
             try {
