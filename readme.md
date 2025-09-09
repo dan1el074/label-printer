@@ -1,6 +1,6 @@
 # Aplicação ImprimeEtiquetas
 
-![Static Badge](https://img.shields.io/badge/status-development-blue) [![Static Badge](https://img.shields.io/badge/release-v0.0.1-blue)](https://github.com/dan1el074/pdf-printer-with-electron-and-ts/releases/tag/3.0.4)
+![Static Badge](https://img.shields.io/badge/status-finished-green) [![Static Badge](https://img.shields.io/badge/release-v1.1-blue)](https://github.com/dan1el074/label-printer/releases/tag/1.1)
 
 Este projeto é uma aplicação desktop em **Node.js**, usando **TypeScript** com o framework **Electron.js**, desenvolvida para o setor de engenharia da empresa [Metaro Indústria e Comércio LTDA](https://www.metaro.com.br).
 
