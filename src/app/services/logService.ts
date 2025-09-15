@@ -8,7 +8,7 @@ export function log(message: string): void {
     const timestamp = `${date.getHours()}:${date.getMinutes()}:${date.getSeconds() <= 9 ? `0${date.getSeconds()}` : date.getSeconds()}`;
     const path = require("path");
     const appDataPath = process.env.APPDATA;
-    const dirPath = path.join(appDataPath, 'ImprimePDF');
+    const dirPath = path.join(appDataPath, 'ImprimeEtiqueta');
     const logPath = path.join(dirPath, 'logs');
     const filePath = path.join(logPath, `${day}.txt`);
     const content = `[${timestamp}] ${message}\r\n`;

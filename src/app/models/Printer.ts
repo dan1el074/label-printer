@@ -25,7 +25,11 @@ export class Printer implements Printable {
 
     public printWithPdfToPrinter(temporaryFilePath: string): Promise<string> {
         return new Promise((resolve, reject) => {
-            const options = { printer: this.name };
+            const options = {
+                printer: this.name,
+                orientation: "landscape",
+                scale: "noscale"
+            };
 
             printer.print(temporaryFilePath, options)
                 .then(() => {

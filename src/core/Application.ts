@@ -2,7 +2,7 @@ import { app, Menu, ipcMain, dialog } from 'electron';
 import { Window } from '../app/models/Window';
 import { log, getSpan } from '../app/services/logService';
 import { getPrinters } from '../app/services/printerService';
-import { createLabel, copyPages, openFile } from '../app/services/pdfService';
+import { createLabel, openFile } from '../app/services/pdfService';
 import { exec } from 'child_process';
 import * as path from 'path';
 import fs = require('fs/promises');
@@ -330,10 +330,7 @@ export class Application {
         this.running = true;
 
         const filePath = path.join(this.data.temporaryPath, `/temp_${this.timestamp()}.pdf`);
-        await createLabel(this.data.selectModel, filePath);
-
-        let copies = Math.ceil(copyNumber / this.data.selectModel.collumn);
-        await copyPages(filePath, copies);
+        await createLabel(this.data.selectModel, filePath, copyNumber);
 
         if (printer == "Abrir arquivo") {
             try {
