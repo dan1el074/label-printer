@@ -74,12 +74,13 @@ ipcRenderer.on('set/modelConfig', (_event: any, data: PrintModel): void => {
         }
 
         const max = data.variables[i].max ? data.variables[i].max : "1";
+        const template = data.variables[i].template ? data.variables[i].template : "";
 
         variablesContainer.innerHTML += `
-            <div data-item="${i}" data-item-max=${max} class="item">
+            <div data-item="${i}" data-item-max="${max}" data-item-template="${template}" class="item">
                 <label>${labelContent}:</label>
                 <div data-input="0" class="input-container">
-                    <input type="text" placeholder="...valor" />
+                    <input type="text" value="${template}" placeholder="...valor" />
                     ${trashContent}
                 </div>
                 ${addContent}

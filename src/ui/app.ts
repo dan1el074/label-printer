@@ -48,6 +48,7 @@ function getAddButtonList() {
         button.addEventListener('click', () => {
             const itemIndex = button.attributes[0].value;
             const inputList = document.querySelectorAll(`[data-item="${itemIndex}"] .input-container`);
+            const template = (button.parentNode.parentNode as HTMLElement).attributes[2].value || "";
             let highestInputIndex = 0
 
             inputList.forEach(input => {
@@ -58,7 +59,7 @@ function getAddButtonList() {
 
             let inputContent = `
                 <div data-input="${highestInputIndex + 1}" class="input-container">
-                    <input type="text" placeholder="...valor" />
+                    <input type="text" value="${template}" placeholder="...valor" />
 
                     <div class="buttons">
                         <button data-item-index="${itemIndex}" data-input-index="${highestInputIndex + 1}" tabindex="-1" class="icon trash">
