@@ -4,6 +4,6 @@ interface PrintModel {
     height: number;
     collumn: number;
     variables: Array<PrintVariables>;
-    body: Array<PrintParams>;
+    body: Array<BodyParams>;
     options?: PrintOptions;
 }

@@ -4,4 +4,5 @@ interface PrintOptions {
     lineHeight?: number;
     gap?: number;
     marginLeft?: number;
+    marginTop?: number;
 }
