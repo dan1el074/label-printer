@@ -161,13 +161,13 @@ printPageBtn.addEventListener('click', () => {
     printPage.style.transform = 'translateX(-100%)';
 
     const inputList: NodeListOf<HTMLInputElement> = document.querySelectorAll(`.config-container input`);
-    const addButtonList: HTMLElement = document.querySelector('.add');
+    const addButton: HTMLElement = document.querySelector('.add');
 
     inputList.forEach(input => {
         input.tabIndex = -1;
     })
 
-    addButtonList.tabIndex = -1;
+    if (addButton) addButton.tabIndex = -1;
     previousHomeBtn.tabIndex = -1;
     printPageBtn.tabIndex = -1;
     previousConfigBtn.tabIndex = 0;
@@ -182,13 +182,13 @@ previousConfigBtn.addEventListener('click', () => {
     printPage.style.transform = 'translateX(100%)';
 
     const inputList: NodeListOf<HTMLInputElement> = document.querySelectorAll(`.config-container input`);
-    const addButtonList: HTMLElement = document.querySelector('.add');
+    const addButton: HTMLElement = document.querySelector('.add');
 
     inputList.forEach(input => {
         input.tabIndex = 0;
     })
 
-    addButtonList.tabIndex = 0;
+    if (addButton) addButton.tabIndex = 0;
     previousHomeBtn.tabIndex = 0;
     printPageBtn.tabIndex = 0;
     previousConfigBtn.tabIndex = -1;
