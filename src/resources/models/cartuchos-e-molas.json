@@ -5,7 +5,11 @@
     "collumn": 2,
     "variables": [
         {"name": "cartucho"},
-        {"name": "item", "max": 3}
+        {
+            "name": "item",
+            "template": "1 Mola de 1kg - xxxx",
+            "max": 3
+        }
     ],
     "body": [
         {"type": "text", "value": "Cartucho: %cartucho%"},
@@ -15,7 +19,7 @@
         "fontSize": 10,
         "bold": true,
         "lineHeight": 15,
-        "gap": 20,
-        "marginLeft": 10
+        "gap": 10,
+        "marginTop": 5
     }
 }

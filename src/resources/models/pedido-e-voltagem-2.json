@@ -1,0 +1,34 @@
+{
+    "title": "35x24x3 - Pedido e voltagem",
+    "width": 34,
+    "height": 23,
+    "collumn": 3,
+    "variables": [
+        {"name": "pedido"},
+        {"name": "voltagem"}
+    ],
+    "body": [
+        {"type": "text", "value": "Pedido: %pedido%"},
+        {
+            "type": "text",
+            "value": "%voltagem%V",
+            "options": {
+                "fontSize": 14,
+                "lineHeight": 18
+            }
+        },
+        {
+            "type": "text",
+            "value": "TRIFÁSICO",
+            "options": {
+                "fontSize": 14,
+                "lineHeight": 18
+            }
+        }
+    ],
+    "options": {
+        "fontSize": 9,
+        "bold": true,
+        "lineHeight": 15
+    }
+}
