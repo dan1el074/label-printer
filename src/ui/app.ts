@@ -2,9 +2,11 @@ const modelSelect: HTMLSelectElement = document.getElementById('print-model-sele
 const placeholder: HTMLElement = document.getElementById('placeholder');
 const newPlaceholder: HTMLElement = document.getElementById('new-placeholder');
 const inputSearch: HTMLElement = document.querySelector('.input-search');
+const searchBtn: HTMLElement = document.getElementById('search-btn');
 const configPageBtn: HTMLElement = document.getElementById('config-page-btn');
 const printModelError: HTMLElement = document.getElementById('print-model-error');
 const configPage: HTMLElement = document.querySelector('.config-page');
+const variablesContainer: HTMLElement = document.getElementById("variables");
 const previousHomeBtn: HTMLElement = document.getElementById('previous-home-btn');
 const printPageBtn: HTMLElement = document.getElementById('print-page-btn');
 const printPage: HTMLElement = document.querySelector('.print-page');
@@ -49,7 +51,7 @@ function getAddButtonList() {
             const itemIndex = button.attributes[0].value;
             const inputList = document.querySelectorAll(`[data-item="${itemIndex}"] .input-container`);
             const template = (button.parentNode.parentNode as HTMLElement).attributes[2].value || "";
-            let highestInputIndex = 0
+            let highestInputIndex = 0;
 
             inputList.forEach(input => {
                 if (parseInt(input.attributes[0].value) > highestInputIndex) {
@@ -116,14 +118,22 @@ configPageBtn.addEventListener('click', async () => {
         return;
     }
 
+    configPageBtn.blur();
+
     if (fileName) {
-        // addNewModel roda getConfigInput depois que terminar
-        ipcRenderer.send('action/addNewModel')
+        ipcRenderer.send('action/addNewModel') // roda getConfigInput depois que terminar
     } else {
         ipcRenderer.send('action/getConfigInput', modelSelect.value);
     }
 
     configPage.style.transform = 'translateX(-100%)';
+
+    modelSelect.tabIndex = -1;
+    searchBtn.tabIndex = -1;
+    configPageBtn.tabIndex = -1;
+    previousHomeBtn.tabIndex = 0;
+    printPageBtn.tabIndex = 0;
+
     setTimeout(() => {
         newPlaceholder.innerHTML = "";
         newPlaceholder.style.display = 'none';
@@ -134,15 +144,57 @@ configPageBtn.addEventListener('click', async () => {
 previousHomeBtn.addEventListener('click', () => {
     ipcRenderer.send('action/reset');
     configPage.style.transform = 'translateX(100%)';
+    previousHomeBtn.blur();
+
+    modelSelect.tabIndex = 0;
+    searchBtn.tabIndex = 0;
+    configPageBtn.tabIndex = 0;
+    previousHomeBtn.tabIndex = -1;
+    printPageBtn.tabIndex = -1;
+
+    setTimeout(() => {
+        variablesContainer.innerHTML = "";
+    }, 500);
 })
 
 printPageBtn.addEventListener('click', () => {
     printPage.style.transform = 'translateX(-100%)';
+
+    const inputList: NodeListOf<HTMLInputElement> = document.querySelectorAll(`.config-container input`);
+    const addButtonList: HTMLElement = document.querySelector('.add');
+
+    inputList.forEach(input => {
+        input.tabIndex = -1;
+    })
+
+    addButtonList.tabIndex = -1;
+    previousHomeBtn.tabIndex = -1;
+    printPageBtn.tabIndex = -1;
+    previousConfigBtn.tabIndex = 0;
+    printerSelect.tabIndex = 0;
+    copyInput.tabIndex = 0;
+    printBtn.tabIndex = 0;
+
     verifyInputs();
 })
 
 previousConfigBtn.addEventListener('click', () => {
     printPage.style.transform = 'translateX(100%)';
+
+    const inputList: NodeListOf<HTMLInputElement> = document.querySelectorAll(`.config-container input`);
+    const addButtonList: HTMLElement = document.querySelector('.add');
+
+    inputList.forEach(input => {
+        input.tabIndex = 0;
+    })
+
+    addButtonList.tabIndex = 0;
+    previousHomeBtn.tabIndex = 0;
+    printPageBtn.tabIndex = 0;
+    previousConfigBtn.tabIndex = -1;
+    printerSelect.tabIndex = -1;
+    copyInput.tabIndex = -1;
+    printBtn.tabIndex = -1;
 })
 
 printBtn.addEventListener('click', () => {

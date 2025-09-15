@@ -1,7 +1,6 @@
 const appTitle: HTMLElement = document.getElementById("app-title");
 const printersSelect: HTMLElement = document.getElementById("printers-select");
 const windowTitle: HTMLElement = document.getElementById("window-title");
-const variablesContainer: HTMLElement = document.getElementById("variables");
 let showDialog: boolean = true;
 
 ipcRenderer.on('app/setTitle', (_event: any, version: string): void => {

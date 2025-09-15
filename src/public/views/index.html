@@ -18,12 +18,12 @@
       <div class="tab-bar">
         <div class="window-buttons">
           <div class="minimise">
-            <button id="btnMinimize">
+            <button id="btnMinimize" tabindex="-1">
               <img src="../images/windows-minimise.png" alt="minimizar" />
             </button>
           </div>
           <div class="close">
-            <button id="btnClose">
+            <button id="btnClose" tabindex="-1">
               <img src="../images/windows-close.png" alt="sair" />
             </button>
           </div>
@@ -51,26 +51,26 @@
     </section>
 
     <section class="config-page">
-      <button id="previous-home-btn" class="btn previous">< Voltar</button>
+      <button id="previous-home-btn" class="btn previous" tabindex="-1">< Voltar</button>
 
       <div id="variables" class="config-container"></div>
 
-      <button id="print-page-btn" class="btn next">Avançar ></button>
+      <button id="print-page-btn" class="btn next" tabindex="-1">Avançar ></button>
     </section>
 
     <section class="print-page">
-      <button id="previous-config-btn" class="btn previous">< Voltar</button>
+      <button id="previous-config-btn" class="btn previous" tabindex="-1">< Voltar</button>
 
       <div class="print-content">
         <label>Selecione a impressora:</label>
-        <select id="printers-select" class="input"></select>
+        <select id="printers-select" class="input" tabindex="-1" tabindex="-1"></select>
 
         <label>Cópias:</label>
         <div class="copy-container">
-          <input id="copy-input" class="copy" type="number" min="0" max="9999" value="1" placeholder="...valor">
+          <input id="copy-input" class="copy" type="number" min="0" max="9999" value="1" placeholder="...valor" tabindex="-1">
 
           <div class="buttons">
-            <button id="print-btn" class="icon print">
+            <button id="print-btn" class="icon print" tabindex="-1">
               <img src="../images/print.svg">
               <span>Imprimir</span>
             </button>
