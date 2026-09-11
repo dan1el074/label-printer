@@ -1,7 +1,7 @@
 import { PDFDocument, PDFFont, PDFPage, StandardFonts, rgb } from 'pdf-lib';
 import { writeFileSync } from 'fs';
 import { log } from '../../app/services/logService';
-import { exec } from 'child_process';
+import { shell } from 'electron';
 import * as fs from 'fs';
 
 export async function createLabel(printModel: PrintModel, tempPath: string, copies: number): Promise<any> {
@@ -33,7 +33,7 @@ export async function createLabel(printModel: PrintModel, tempPath: string, copi
     for (let i=0; i<copies; i++) {
         let rowCount = 1;
 
-        printModel.body.forEach(async (currentBody) => {
+        for (const currentBody of printModel.body) {
             let message = currentBody.value;
 
             let bodyFontFamily = fontFamily;
@@ -76,7 +76,7 @@ export async function createLabel(printModel: PrintModel, tempPath: string, copi
                     rowCount++;
                 }
             }
-        });
+        }
 
         if (columnCount % printModel.collumn === 0) {
             if (i + 1 != copies) page = pdfDoc.addPage([width, height]);
@@ -94,7 +94,8 @@ export async function createLabel(printModel: PrintModel, tempPath: string, copi
 }
 
 export async function openFile(filePath: string) {
-    exec(`start "" "${filePath}"`);
+    const error = await shell.openPath(filePath);
+    if (error) throw new Error('Não foi possível abrir o PDF: ' + error);
 }
 
 function draw(page: PDFPage, message: string, x: number, y: number, fontFamily: PDFFont, fontSize: number, lineHeight: number, gap: number) {

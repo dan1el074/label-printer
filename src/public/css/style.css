@@ -284,3 +284,14 @@ button, .button {
 .print:hover span {
     color: #fff;
 }
+
+section button:disabled, section input:disabled, section select:disabled {
+    opacity: 0.6;
+    cursor: wait;
+}
+section button:disabled:hover {
+    background-color: #ddd;
+}
+section button:disabled span {
+    cursor: wait;
+}

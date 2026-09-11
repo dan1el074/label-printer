@@ -3,7 +3,7 @@ import { Window } from '../app/models/Window';
 import { log, getSpan } from '../app/services/logService';
 import { getPrinters } from '../app/services/printerService';
 import { createLabel, openFile } from '../app/services/pdfService';
-import { exec } from 'child_process';
+import { randomUUID } from 'crypto';
 import * as path from 'path';
 import fs = require('fs/promises');
 
@@ -40,6 +40,7 @@ export class Application {
     }
 
     public async init() {
+        await this.copyFileIfNotExists();
         await this.readConfigFile();
         await this.createResultPath();
         await app.whenReady().then(async () => {
@@ -52,25 +53,10 @@ export class Application {
         await this.getPrinters();
     }
 
-    private async copyFileIfNotExists() {
-        try {
-            exec(
-                'mkdir "%APPDATA%\\ImprimeEtiqueta\\temp" "%APPDATA%\\ImprimeEtiqueta\\logs"',
-            );
-        } catch (error) {
-            log(error);
-        }
-    }
-
-    private timestamp(): string {
-        const now = new Date();
-        const timestamp = now.getFullYear() + "-" +
-            String(now.getMonth() + 1).padStart(2, "0") + "-" +
-            String(now.getDate()).padStart(2, "0") + "_" +
-            String(now.getHours()).padStart(2, "0") + "-" +
-            String(now.getMinutes()).padStart(2, "0") + "-" +
-            String(now.getSeconds()).padStart(2, "0");
-        return timestamp;
+    private async copyFileIfNotExists(): Promise<void> {
+        const appPath = path.join(process.env.APPDATA, 'ImprimeEtiqueta');
+        await fs.mkdir(path.join(appPath, 'temp'), { recursive: true });
+        await fs.mkdir(path.join(appPath, 'logs'), { recursive: true });
     }
 
     private async readConfigFile(): Promise<void> {
@@ -88,25 +74,13 @@ export class Application {
             log(message);
         } catch (error) {
             console.error('Erro ao ler o arquivo de configuração:', error);
+            throw error;
         }
     }
 
-    private async createResultPath() {
-        const appDataPath = process.env.APPDATA;
-        let dirPath = path.join(appDataPath, 'ImprimeEtiqueta');
-        dirPath = path.join(dirPath, 'temp');
-
-        if (this.configData.tmpPath) {
-            this.data.temporaryPath = this.configData.tmpPath;
-            return;
-        }
-
-        try {
-            await this.copyFileIfNotExists();
-            this.data.temporaryPath = dirPath;
-        } catch (err) {
-            log(`Erro ao criar o caminho do resultado: ${err.message}`);
-        }
+    private async createResultPath(): Promise<void> {
+        this.data.temporaryPath = this.configData.tmpPath || path.join(process.env.APPDATA, 'ImprimeEtiqueta', 'temp');
+        await fs.mkdir(this.data.temporaryPath, { recursive: true });
     }
 
     private async getPrintModels(): Promise<void> {
@@ -135,7 +109,7 @@ export class Application {
 
     private async getPrinters(): Promise<void> {
         try {
-            const printers = await getPrinters();
+            const printers = await getPrinters(this.window.mainWindow.webContents);
 
             this.data.printerList = printers;
             const NameOfPrinters = this.data.printerList.map(
@@ -151,7 +125,7 @@ export class Application {
             this.actionFromBackend('set/printers', printerNames);
         } catch (error) {
             log(error);
-            this.actionFromBackend('message/breakError', error);
+            this.actionFromBackend('message/breakError', 'Não foi possível consultar as impressoras disponíveis.');
         }
     }
 
@@ -175,107 +149,110 @@ export class Application {
                 break;
             }
             case 'action/showDialog': {
-                ipcMain.on(route, async () => {
-                    try {
-                        const arrayModels: Array<string> = await this.getPath();
-                        this.data.newModelPath = arrayModels[0];
-                        this.data.newModelFileName = arrayModels[1];
-                        this.actionFromBackend('set/fileName', this.data.newModelFileName);
-                    } catch (error) {
-                        log(error);
-                    }
+                ipcMain.on(route, () => {
+                    void this.runOperation(async () => {
+                        try {
+                            const result = await this.getPath();
+                            if (result) {
+                                this.data.newModelPath = result[0];
+                                this.data.newModelFileName = result[1];
+                                this.actionFromBackend('set/fileName', result[1]);
+                            }
+                        } finally {
+                            this.actionFromBackend('action/closeDialog');
+                        }
+                    });
                 });
                 break;
             }
             case 'action/addNewModel': {
-                ipcMain.on(route, async () => {
-                    const destinationPath = path.join(__dirname, '../resources/models');
-                    const filesNumberInPath = await fs.readdir(destinationPath);
-                    const newFile = `${destinationPath}/custom-model${filesNumberInPath.length - 2}.json`;
-                    const verifyModel = await this.verifyNewModel(this.data.newModelPath);
-
-                    if(!verifyModel) {
-                        this.resetApplication();
-                        return;
-                    }
-
-                    await fs.copyFile(this.data.newModelPath, newFile);
-                    await this.getPrintModels();
-                    await this.setModelPrintByFilePath(newFile);
-                    this.actionFromBackend('set/printModel', this.data.selectModel.title);
-                    this.getConfigInput(this.data.selectModel.title);
-                    this.actionFromBackend('message/success', 'Modelo adicionado com sucesso!');
+                ipcMain.on(route, () => {
+                    void this.runOperation(async () => {
+                        if (!await this.verifyNewModel(this.data.newModelPath)) {
+                            this.resetApplication();
+                            return;
+                        }
+                        const newFile = path.join(__dirname, '../resources/models', 'custom-model-' + randomUUID() + '.json');
+                        await fs.copyFile(this.data.newModelPath, newFile);
+                        await this.getPrintModels();
+                        await this.setModelPrintByFilePath(newFile);
+                        this.actionFromBackend('set/printModel', this.data.selectModel.title);
+                        await this.getConfigInput(this.data.selectModel.title);
+                        this.actionFromBackend('message/success', 'Modelo adicionado com sucesso!');
+                    });
                 });
                 break;
             }
             case 'action/getConfigInput': {
-                ipcMain.on(route, (_event, modelTitle: string): void => {
-                    this.getConfigInput(modelTitle);
+                ipcMain.on(route, (_event, modelTitle: string) => {
+                    void this.runOperation(() => this.getConfigInput(modelTitle));
                 });
                 break;
             }
             case 'action/reset': {
-                ipcMain.on(route, (): void => {
+                ipcMain.on(route, () => {
+                    if (this.running) return;
                     this.resetApplication();
                 });
                 break;
             }
             case 'action/setModel': {
-                ipcMain.on(route, (_event, newModel: PrintModel): void => {
+                ipcMain.on(route, (_event, newModel: PrintModel) => {
+                    if (this.running) return;
                     this.data.selectModel = newModel;
                 });
                 break;
             }
             case 'app/start': {
-                ipcMain.on(route, async (_event, data: Array<string>) => {
-                    try {
-                        await this.start(data[0], parseInt(data[1]));
-                        this.running = false;
-                    } catch(error) {
-                        log(error);
-                    }
+                ipcMain.on(route, (_event, data: Array<string>) => {
+                    void this.start(data[0], Number(data[1]));
                 });
                 break;
             }
         }
     }
 
-    private async verifyNewModel(newFile: string): Promise<boolean> {
-        return new Promise(async (resolve, reject) => {
-            const content = await fs.readFile(newFile, 'utf-8');
-            const contentObj: PrintModel = await JSON.parse(content);
-
-            this.data.modelList.forEach(model => {
-                if (model.title == contentObj.title) {
-                    this.actionFromBackend('message/error', 'Já existe um modelo com esse mesmo título!');
-                    log('Já existe um modelo com esse mesmo título!');
-                    resolve(false);
-                }
-            })
-
-            resolve(true);
-        })
-    }
-
-    private async setModelPrintByFilePath(filePath: string) {
+    private async runOperation(operation: () => Promise<void>): Promise<void> {
+        if (this.running) return;
+        this.running = true;
+        this.actionFromBackend('app/setBusy', true);
         try {
-            const content = await fs.readFile(filePath, 'utf-8');
-            this.data.selectModel = JSON.parse(content);
+            await operation();
         } catch (error) {
-           log('Erro ao encontrar modelo: ' + error);
+            const message = error instanceof Error ? error.message : String(error);
+            log(message);
+            this.actionFromBackend('message/error', message);
+        } finally {
+            this.running = false;
+            this.actionFromBackend('app/setBusy', false);
         }
     }
 
-    private async getConfigInput(modelTitle: string) {
-        this.data.modelList.forEach(model => {
-            if(model.title == modelTitle) this.data.selectModel = model
-        })
-
-        this.actionFromBackend('set/modelConfig', this.data.selectModel)
+    private async verifyNewModel(newFile: string): Promise<boolean> {
+        const content: PrintModel = JSON.parse(await fs.readFile(newFile, 'utf-8'));
+        if (!content.title || !Array.isArray(content.variables) || !Array.isArray(content.body)) {
+            throw new Error('Modelo de impressão inválido.');
+        }
+        if (this.data.modelList.some(model => model.title === content.title)) {
+            this.actionFromBackend('message/error', 'Já existe um modelo com esse mesmo título!');
+            return false;
+        }
+        return true;
     }
 
-    private actionFromBackend(route: string, message?: string | PrintModel | Array<string>): void {
-        if (message) {
+    private async setModelPrintByFilePath(filePath: string): Promise<void> {
+        this.data.selectModel = JSON.parse(await fs.readFile(filePath, 'utf-8'));
+    }
+
+    private async getConfigInput(modelTitle: string): Promise<void> {
+        const model = this.data.modelList.find(item => item.title === modelTitle);
+        if (!model) throw new Error('Selecione um modelo de impressão válido.');
+        this.data.selectModel = JSON.parse(JSON.stringify(model));
+        this.actionFromBackend('set/modelConfig', this.data.selectModel);
+    }
+
+    private actionFromBackend(route: string, message?: string | PrintModel | Array<string> | boolean): void {
+        if (message !== undefined) {
             this.window.mainWindow.webContents.send(route, message);
             return;
         }
@@ -288,81 +265,35 @@ export class Application {
         Menu.setApplicationMenu(menu);
     }
 
-    private async getPath(): Promise<Array<string>> {
-        return new Promise(async (resolve, reject) => {
-            let dialogPath = await dialog.showOpenDialog({
-                defaultPath: app.getPath('desktop'),
-                title: 'Selecione o arquivo:',
-                buttonLabel: 'Selecionar',
-                filters: [
-                    {
-                        name: 'Excel',
-                        extensions: ['json'],
-                    },
-                ],
-            });
-
-            if (dialogPath.canceled) {
-                this.actionFromBackend('action/closeDialog');
-                reject('Operação cancelada');
-            }
-
-            const folderPath = String(dialogPath.filePaths).replace(
-                '\\\\',
-                '\\',
-            );
-            const arrayFolder = folderPath.split('\\');
-            const fileName = arrayFolder[arrayFolder.length - 1];
-            let filePath: string;
-            filePath = folderPath;
-
-            if (arrayFolder[1] === 'metaro-server') {
-                filePath = '\\' + folderPath;
-            }
-
-            this.actionFromBackend('action/closeDialog');
-            resolve([filePath, fileName]);
+    private async getPath(): Promise<Array<string> | undefined> {
+        const result = await dialog.showOpenDialog({
+            defaultPath: app.getPath('desktop'),
+            title: 'Selecione o arquivo:',
+            buttonLabel: 'Selecionar',
+            filters: [{ name: 'Modelo JSON', extensions: ['json'] }]
         });
+        if (result.canceled || !result.filePaths.length) return;
+        return [result.filePaths[0], path.basename(result.filePaths[0])];
     }
 
-    private async start(printer: string, copyNumber: number) {
-        if (this.running) return;
-        this.running = true;
-
-        const filePath = path.join(this.data.temporaryPath, `/temp_${this.timestamp()}.pdf`);
-        await createLabel(this.data.selectModel, filePath, copyNumber);
-
-        if (printer == "Abrir arquivo") {
-            try {
-                await openFile(filePath);
-                this.running = false;
-
-                log("Impressão enviada com sucesso!");
-                setTimeout(() => {
-                    this.actionFromBackend('message/success', "Impressão enviada com sucesso!");
-                }, 500)
-            } catch (error) {
-                log("Erro ao imprimir: " + error);
-                setTimeout(() => {
-                    this.actionFromBackend('message/error', "Erro ao imprimir!");
-                }, 500)
+    private async start(printer: string, copyNumber: number): Promise<void> {
+        await this.runOperation(async () => {
+            const selectedPrinter = this.data.printerList.find(item => item.name === printer);
+            if (!selectedPrinter) throw new Error('Selecione uma impressora válida.');
+            if (!this.data.selectModel) throw new Error('Selecione um modelo de impressão.');
+            if (!Number.isInteger(copyNumber) || copyNumber < 1 || copyNumber > 9999) {
+                throw new Error('Informe uma quantidade de cópias entre 1 e 9999.');
             }
-
-            return;
-        }
-
-        try {
-            let index = this.data.printerList.findIndex(data => data.name == printer);
-            await this.data.printerList[index].print(filePath);
-
-            log("Impressão enviada com sucesso!");
-            setTimeout(() => {
-                this.actionFromBackend('message/success', "Impressão enviada com sucesso!");
-            }, 500)
-        } catch(error) {
-            log(error);
-        }
-
-        this.running = false;
+            const model: PrintModel = JSON.parse(JSON.stringify(this.data.selectModel));
+            const filePath = path.join(this.data.temporaryPath, 'temp_' + randomUUID() + '.pdf');
+            await createLabel(model, filePath, copyNumber);
+            if (printer === 'Abrir arquivo') {
+                await openFile(filePath);
+                this.actionFromBackend('message/success', 'Arquivo gerado e aberto com sucesso!');
+            } else {
+                const result = await selectedPrinter.print(filePath);
+                this.actionFromBackend('message/success', result);
+            }
+        });
     }
 }

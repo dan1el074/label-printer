@@ -17,6 +17,23 @@ const printBtn: HTMLElement = document.getElementById('print-btn');
 let trashButtonList: NodeListOf<HTMLElement>;
 let addButtonList: NodeListOf<HTMLElement>;
 let printModel: PrintModel;
+let isBusy = false;
+
+function setBusy(busy: boolean): void {
+    isBusy = busy;
+    document.querySelectorAll<HTMLButtonElement | HTMLInputElement | HTMLSelectElement>(
+        'section button, section input, section select'
+    ).forEach(control => control.disabled = busy);
+    inputSearch.style.pointerEvents = busy ? 'none' : '';
+    document.body.setAttribute('aria-busy', String(busy));
+    printBtn.querySelector('span').textContent = busy ? 'Processando...' : 'Imprimir';
+}
+
+function sendOperation(route: string, data?: any): void {
+    if (isBusy) return;
+    setBusy(true);
+    ipcRenderer.send(route, data);
+}
 
 function getTrashButtonList() {
     trashButtonList = document.querySelectorAll('.trash');
@@ -24,6 +41,7 @@ function getTrashButtonList() {
 
     trashButtonList.forEach(button => {
         button.addEventListener('click', () => {
+    if (isBusy) return;
             const itemIndex = button.attributes[0].value;
             const inputIndex = button.attributes[1].value;
             const itemContent =  document.querySelector(`[data-item="${itemIndex}"] [data-input="${inputIndex}"]`);
@@ -48,6 +66,7 @@ function getAddButtonList() {
 
     addButtonList.forEach(button => {
         button.addEventListener('click', () => {
+    if (isBusy) return;
             const itemIndex = button.attributes[0].value;
             const inputList = document.querySelectorAll(`[data-item="${itemIndex}"] .input-container`);
             const template = (button.parentNode.parentNode as HTMLElement).attributes[2].value || "";
@@ -94,6 +113,7 @@ function verifyInputs() {
 }
 
 modelSelect.addEventListener('change', () => {
+    if (isBusy) return;
     modelSelect.style.border = "1px solid #fff";
     printModelError.style.height = "0px";
     placeholder.style.display = 'inline';
@@ -102,13 +122,15 @@ modelSelect.addEventListener('change', () => {
 });
 
 inputSearch.addEventListener('click', () => {
+    if (isBusy) return;
     if (showDialog) {
-        ipcRenderer.send('action/showDialog');
+        sendOperation('action/showDialog');
         showDialog = false;
     }
 });
 
 configPageBtn.addEventListener('click', async () => {
+    if (isBusy) return;
     const fileName = document.getElementById('new-placeholder').innerHTML;
 
     if(!fileName && modelSelect.value == "none") {
@@ -118,12 +140,13 @@ configPageBtn.addEventListener('click', async () => {
         return;
     }
 
+    printModel = undefined;
     configPageBtn.blur();
 
     if (fileName) {
-        ipcRenderer.send('action/addNewModel') // roda getConfigInput depois que terminar
+        sendOperation('action/addNewModel') // roda getConfigInput depois que terminar
     } else {
-        ipcRenderer.send('action/getConfigInput', modelSelect.value);
+        sendOperation('action/getConfigInput', modelSelect.value);
     }
 
     configPage.style.transform = 'translateX(-100%)';
@@ -134,14 +157,13 @@ configPageBtn.addEventListener('click', async () => {
     previousHomeBtn.tabIndex = 0;
     printPageBtn.tabIndex = 0;
 
-    setTimeout(() => {
-        newPlaceholder.innerHTML = "";
-        newPlaceholder.style.display = 'none';
-        placeholder.style.display = 'inline';
-    }, 600);
+    newPlaceholder.innerHTML = "";
+    newPlaceholder.style.display = 'none';
+    placeholder.style.display = 'inline';
 });
 
 previousHomeBtn.addEventListener('click', () => {
+    if (isBusy) return;
     ipcRenderer.send('action/reset');
     configPage.style.transform = 'translateX(100%)';
     previousHomeBtn.blur();
@@ -152,12 +174,12 @@ previousHomeBtn.addEventListener('click', () => {
     previousHomeBtn.tabIndex = -1;
     printPageBtn.tabIndex = -1;
 
-    setTimeout(() => {
-        variablesContainer.innerHTML = "";
-    }, 500);
+    printModel = undefined;
+    variablesContainer.innerHTML = "";
 })
 
 printPageBtn.addEventListener('click', () => {
+    if (isBusy || !printModel) return;
     printPage.style.transform = 'translateX(-100%)';
 
     const inputList: NodeListOf<HTMLInputElement> = document.querySelectorAll(`.config-container input`);
@@ -179,6 +201,7 @@ printPageBtn.addEventListener('click', () => {
 })
 
 previousConfigBtn.addEventListener('click', () => {
+    if (isBusy) return;
     printPage.style.transform = 'translateX(100%)';
 
     const inputList: NodeListOf<HTMLInputElement> = document.querySelectorAll(`.config-container input`);
@@ -198,5 +221,7 @@ previousConfigBtn.addEventListener('click', () => {
 })
 
 printBtn.addEventListener('click', () => {
-    ipcRenderer.send('app/start', [printerSelect.value, copyInput.value]);
+    if (isBusy) return;
+    if (!printerSelect.value || !copyInput.reportValidity()) return;
+    sendOperation('app/start', [printerSelect.value, copyInput.value]);
 });

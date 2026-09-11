@@ -32,7 +32,8 @@ ipcRenderer.on('message/error', (event: any, data: string) => {
     alertContainer.appendChild(div);
 
     setTimeout(() => {
-        document.getElementById(`alert${counter}`).remove();
+        const currentAlert = document.getElementById(`alert${counter}`);
+        if (currentAlert) currentAlert.remove();
     }, 5000);
 });
 

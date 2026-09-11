@@ -8,24 +8,15 @@ export class Printer implements Printable {
         this.name = name;
     }
 
-    public print(temporaryFilePath: string): Promise<string> {
-        return new Promise(async (resolve, reject) => {
-            log(`Impressora selecionada: ${this.name}`);
-
-            if (this.name == "Salvar como PDF") {
-                reject('Salvo como PDF')
-                return;
-            }
-
-            await this.printWithPdfToPrinter(temporaryFilePath)
-                .then(text => resolve(text))
-                .catch(text => reject(text))
-        })
+    public async print(temporaryFilePath: string): Promise<string> {
+        log('Impressora selecionada: ' + this.name);
+        if (this.name === 'Abrir arquivo') throw new Error('Use a opção de abrir arquivo.');
+        return this.printWithPdfToPrinter(temporaryFilePath);
     }
 
     public printWithPdfToPrinter(temporaryFilePath: string): Promise<string> {
         return new Promise((resolve, reject) => {
-            const options = {
+            const options: Parameters<typeof printer.print>[1] = {
                 printer: this.name,
                 orientation: "landscape",
                 scale: "noscale"

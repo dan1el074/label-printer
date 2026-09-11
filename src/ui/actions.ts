@@ -3,6 +3,8 @@ const printersSelect: HTMLElement = document.getElementById("printers-select");
 const windowTitle: HTMLElement = document.getElementById("window-title");
 let showDialog: boolean = true;
 
+ipcRenderer.on('app/setBusy', (_event: any, busy: boolean): void => setBusy(busy));
+
 ipcRenderer.on('app/setTitle', (_event: any, version: string): void => {
     appTitle.innerHTML += " v" + version;
     windowTitle.innerHTML += " v" + version;
@@ -36,7 +38,7 @@ ipcRenderer.on('set/models', (_event: any, data: Array<string>): void => {
 });
 
 ipcRenderer.on('set/printModel', (_event: any, data: string): void => {
-    setTimeout(() => modelSelect.value = data, 600);
+    modelSelect.value = data;
 });
 
 ipcRenderer.on('set/modelConfig', (_event: any, data: PrintModel): void => {
@@ -45,6 +47,7 @@ ipcRenderer.on('set/modelConfig', (_event: any, data: PrintModel): void => {
 
     if(!data.variables.length) {
         variablesContainer.innerHTML = '<div class="item empty">Nenhuma variável encontrada</div>';
+        setBusy(isBusy);
         return;
     }
 
@@ -89,10 +92,15 @@ ipcRenderer.on('set/modelConfig', (_event: any, data: PrintModel): void => {
 
     getTrashButtonList();
     getAddButtonList();
+    setBusy(isBusy);
 });
 
 ipcRenderer.on('set/printers', (_event: any, data: Array<string>): void => {
+    printersSelect.innerHTML = '';
     data.forEach((printer: string): void => {
-        printersSelect.innerHTML += `<option value='${printer}'>${printer}</option>`;
+        const option = document.createElement('option');
+        option.value = printer;
+        option.textContent = printer;
+        printersSelect.appendChild(option);
     });
 });
