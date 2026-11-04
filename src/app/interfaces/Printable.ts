@@ -1,4 +1,4 @@
 interface Printable {
     name: string;
-    print(temporaryFilePath: string): Promise<string>;
+    print(temporaryFilePath: string, orientation?: 'portrait' | 'landscape'): Promise<string>;
 }

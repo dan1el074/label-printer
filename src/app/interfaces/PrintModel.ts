@@ -5,5 +5,6 @@ interface PrintModel {
     collumn: number;
     variables: Array<PrintVariables>;
     body: Array<BodyParams>;
+    source?: 'foccoerp';
     options?: PrintOptions;
 }

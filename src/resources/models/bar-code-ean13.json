@@ -1,0 +1,37 @@
+{
+    "title": "60x100 - Código de barras EAN13",
+    "width": 60,
+    "height": 100,
+    "collumn": 1,
+    "source": "foccoerp",
+    "variables": [
+        { "name": "cod_item" }
+    ],
+    "body": [
+        {
+            "type": "text",
+            "value": "%desc_tecnica%",
+            "options": { "maxWidth": 60, "maxLines": 2 }
+        },
+        {
+            "type": "barcode",
+            "format": "EAN13",
+            "value": "%cod_barra%",
+            "options": {
+                "y": 23,
+                "width": 60,
+                "height": 24,
+                "showText": true,
+                "fontSize": 9
+            }
+        }
+    ],
+    "options": {
+        "fontSize": 8,
+        "bold": false,
+        "lineHeight": 10,
+        "gap": 10,
+        "rotation": 90,
+        "marginTop": 30
+    }
+}

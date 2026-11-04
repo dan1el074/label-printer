@@ -1,11 +1,11 @@
-const fs = require('fs');
-const path = require('path');
+import * as fs from 'fs';
+import * as path from 'path';
 
 const projectPath = path.resolve(__dirname, '../..');
 const sourcePath = path.join(projectPath, 'src');
 const outputPath = path.join(projectPath, 'dist');
 
-function copy(source, destination) {
+function copy(source: string, destination: string): void {
     if (fs.statSync(source).isDirectory()) {
         fs.mkdirSync(destination, { recursive: true });
         fs.readdirSync(source).forEach(name => {
@@ -18,8 +18,10 @@ function copy(source, destination) {
 }
 
 fs.mkdirSync(outputPath, { recursive: true });
+
 ['public', 'resources', 'config.json'].forEach(name => {
     copy(path.join(sourcePath, name), path.join(outputPath, name));
 });
+
 copy(path.join(sourcePath, '.dist'), outputPath);
 console.log('Configuração e recursos copiados para dist.');

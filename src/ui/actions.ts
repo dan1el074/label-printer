@@ -57,6 +57,7 @@ ipcRenderer.on('set/modelConfig', (_event: any, data: PrintModel): void => {
         let addContent = "";
 
         labelContent = labelContent.charAt(0).toUpperCase() + labelContent.slice(1);
+        if (data.source === 'foccoerp' && data.variables[i].name === 'cod_item') labelContent = 'Código do item no ERP';
 
         if (data.variables[i].max > 1) {
             trashContent = `

@@ -3,6 +3,7 @@ import { Window } from '../app/models/Window';
 import { log, getSpan } from '../app/services/logService';
 import { getPrinters } from '../app/services/printerService';
 import { createLabel, openFile } from '../app/services/pdfService';
+import { getFoccoItem } from '../app/services/foccoService';
 import { randomUUID } from 'crypto';
 import * as path from 'path';
 import fs = require('fs/promises');
@@ -68,6 +69,8 @@ export class Application {
                 dev: configData.dev,
                 version: configData.version,
                 tmpPath: configData.tmpPath,
+                foccoErpKey: configData.foccoErpKey,
+                foccoErpBearerToken: configData.foccoErpBearerToken,
             };
 
             let message = `Arquivo de configuração: {${getSpan()}    dev: ${configData.dev},${getSpan()}    version: ${configData.version},${getSpan()}}`;
@@ -285,13 +288,23 @@ export class Application {
                 throw new Error('Informe uma quantidade de cópias entre 1 e 9999.');
             }
             const model: PrintModel = JSON.parse(JSON.stringify(this.data.selectModel));
+            if (model.source === 'foccoerp') {
+                const itemCode = model.variables.find(variable => variable.name === 'cod_item')?.value?.[0];
+                const item = await getFoccoItem(itemCode, this.configData.foccoErpKey, this.configData.foccoErpBearerToken);
+                model.variables.push(
+                    { name: 'desc_tecnica', value: [item.desc_tecnica] },
+                    { name: 'cod_barra', value: [item.cod_barra] }
+                );
+            }
             const filePath = path.join(this.data.temporaryPath, 'temp_' + randomUUID() + '.pdf');
             await createLabel(model, filePath, copyNumber);
             if (printer === 'Abrir arquivo') {
                 await openFile(filePath);
                 this.actionFromBackend('message/success', 'Arquivo gerado e aberto com sucesso!');
             } else {
-                const result = await selectedPrinter.print(filePath);
+                const orientation = model.options?.rotation === 90 && model.width * model.collumn <= model.height
+                    ? 'portrait' : 'landscape';
+                const result = await selectedPrinter.print(filePath, orientation);
                 this.actionFromBackend('message/success', result);
             }
         });

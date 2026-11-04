@@ -8,17 +8,17 @@ export class Printer implements Printable {
         this.name = name;
     }
 
-    public async print(temporaryFilePath: string): Promise<string> {
+    public async print(temporaryFilePath: string, orientation: 'portrait' | 'landscape' = 'landscape'): Promise<string> {
         log('Impressora selecionada: ' + this.name);
         if (this.name === 'Abrir arquivo') throw new Error('Use a opção de abrir arquivo.');
-        return this.printWithPdfToPrinter(temporaryFilePath);
+        return this.printWithPdfToPrinter(temporaryFilePath, orientation);
     }
 
-    public printWithPdfToPrinter(temporaryFilePath: string): Promise<string> {
+    public printWithPdfToPrinter(temporaryFilePath: string, orientation: 'portrait' | 'landscape' = 'landscape'): Promise<string> {
         return new Promise((resolve, reject) => {
             const options: Parameters<typeof printer.print>[1] = {
                 printer: this.name,
-                orientation: "landscape",
+                orientation,
                 scale: "noscale"
             };
 

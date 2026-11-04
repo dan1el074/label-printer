@@ -5,4 +5,5 @@ interface PrintOptions {
     gap?: number;
     marginLeft?: number;
     marginTop?: number;
+    rotation?: 90;
 }

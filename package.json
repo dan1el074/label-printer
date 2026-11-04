@@ -3,7 +3,7 @@
     "version": "2.0.1",
     "description": "Software desktop que tem como objetivo imprimir etiquetas de diversos tipos e tamanhos",
     "scripts": {
-        "build": "tsc && node src/scripts/copy-assets.cjs",
+        "build": "tsc && node dist/scripts/copy-assets.js",
         "build:prod": "npm run build && cd dist && npm install && npm run build:prod && npm run config:prod && npm run clean-dist",
         "start:dev": "npm run build:dev && electron ./dist/main.js",
         "build:dev": "npm run build",

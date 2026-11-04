@@ -1,12 +1,17 @@
-import { PDFDocument, PDFFont, PDFPage, StandardFonts, rgb } from 'pdf-lib';
+import { breakTextIntoLines, PDFDocument, PDFFont, PDFPage, StandardFonts, rgb } from 'pdf-lib';
+import { concatTransformationMatrix, popGraphicsState, pushGraphicsState } from 'pdf-lib';
 import { writeFileSync } from 'fs';
 import { log } from '../../app/services/logService';
 import { shell } from 'electron';
 import * as fs from 'fs';
+import { drawEAN13, resolveBarcodeValue } from './barcodeService';
 
 export async function createLabel(printModel: PrintModel, tempPath: string, copies: number): Promise<any> {
-    const width = mmToPt(printModel.width * printModel.collumn + 10);
+    const rotated = printModel.options?.rotation === 90;
+    const width = mmToPt(printModel.width * printModel.collumn + (rotated ? 0 : 10));
     const height = mmToPt(printModel.height);
+    const layoutWidth = rotated ? printModel.height : printModel.width;
+    const layoutHeight = rotated ? printModel.width : printModel.height;
     const pdfDoc = await PDFDocument.create();
 
     // default values
@@ -32,8 +37,20 @@ export async function createLabel(printModel: PrintModel, tempPath: string, copi
 
     for (let i=0; i<copies; i++) {
         let rowCount = 1;
+        const columnStart = mmToPt(printModel.width) * (columnCount - 1);
+        const horizontalOffset = (rotated ? 0 : columnStart) + (columnCount > 1 ? gap : marginLeft);
+        if (rotated) {
+            // Rotate the label coordinate system clockwise within its physical column.
+            page.pushOperators(pushGraphicsState(), concatTransformationMatrix(0, -1, 1, 0, columnStart, height));
+        }
 
         for (const currentBody of printModel.body) {
+            if (currentBody.type === 'barcode') {
+                if (currentBody.format !== 'EAN13') throw new Error('Formato de código de barras inválido. Utilize EAN13.');
+                drawEAN13(page, resolveBarcodeValue(currentBody.value, printModel.variables), currentBody.options || {},
+                    layoutWidth, layoutHeight, horizontalOffset, await pdfDoc.embedFont(StandardFonts.Helvetica));
+                continue;
+            }
             let message = currentBody.value;
 
             let bodyFontFamily = fontFamily;
@@ -48,35 +65,44 @@ export async function createLabel(printModel: PrintModel, tempPath: string, copi
 
             if (currentBody.type == 'text') {
                 let isPrint = false;
+                const drawMessage = (text: string): void => {
+                    const labelWidth = mmToPt(layoutWidth);
+                    const maxWidth = mmToPt(currentBody.options?.maxWidth || 0);
+                    const maxLines = currentBody.options?.maxLines;
+                    const measure = (line: string): number => bodyFontFamily.widthOfTextAtSize(line, bodyFontSize);
+                    let lines = maxWidth > 0 ? breakTextIntoLines(text, [' '], maxWidth, measure) : [text];
+                    if (maxLines === 2 && lines.length > 1 && !text.includes('\n')) {
+                        lines = balanceTwoLines(text, measure);
+                    }
+                    if (Number.isInteger(maxLines) && maxLines > 0 && lines.length > maxLines) {
+                        const remaining = lines.splice(maxLines - 1);
+                        lines.push(remaining.map(line => line.trim()).join(' '));
+                    }
+                    const widestLine = Math.max(0, ...lines.map(measure));
+                    const scale = maxWidth > 0 && widestLine > maxWidth ? maxWidth / widestLine : 1;
+                    for (const line of lines) {
+                        const lineWidth = measure(line);
+                        const x = (labelWidth - lineWidth * scale) / 2;
+                        const y = mmToPt(layoutHeight) - marginTop - bodyLineHeight * rowCount;
+                        draw(page, line, x, y, bodyFontFamily, bodyFontSize * scale, bodyLineHeight, horizontalOffset);
+                        rowCount++;
+                    }
+                };
 
                 for (let j = 0; j < printModel.variables.length; j++) {
                     if (!currentBody.value.includes(printModel.variables[j].name)) continue;
 
                     for (let y = 0; y < printModel.variables[j].value.length; y++) {
-                        const newMessage = message.replace(`%${printModel.variables[j].name}%`, printModel.variables[j].value[y]);
-                        const textWidth = bodyFontFamily.widthOfTextAtSize(newMessage, bodyFontSize);
-                        const xPosition = ((mmToPt(printModel.width) - textWidth) / 2) + (mmToPt(printModel.width) * (columnCount - 1));
-                        const yPosition = height - marginTop - (bodyLineHeight * rowCount);
-
-                        draw(page, newMessage, xPosition, yPosition, bodyFontFamily, bodyFontSize,
-                            bodyLineHeight, (columnCount > 1 ? gap : marginLeft));
-
+                        drawMessage(message.replace(`%${printModel.variables[j].name}%`, () => printModel.variables[j].value[y]));
                         isPrint = true;
-                        rowCount++;
                     }
                 }
 
-                if (!isPrint) {
-                    const textWidth = bodyFontFamily.widthOfTextAtSize(message, bodyFontSize);
-                    const xPosition = ((mmToPt(printModel.width) - textWidth) / 2) + (mmToPt(printModel.width) * (columnCount - 1));
-                    const yPosition = height - marginTop - (bodyLineHeight * rowCount);
-
-                    draw(page, message, xPosition, yPosition, bodyFontFamily, bodyFontSize,
-                        bodyLineHeight, (columnCount > 1 ? gap : marginLeft));
-                    rowCount++;
-                }
+                if (!isPrint) drawMessage(message);
             }
         }
+
+        if (rotated) page.pushOperators(popGraphicsState());
 
         if (columnCount % printModel.collumn === 0) {
             if (i + 1 != copies) page = pdfDoc.addPage([width, height]);
@@ -114,4 +140,20 @@ function draw(page: PDFPage, message: string, x: number, y: number, fontFamily: 
 
 function mmToPt(mm: number): number {
     return (mm / 25.4) * 72;
+}
+
+function balanceTwoLines(text: string, measure: (line: string) => number): string[] {
+    const words = text.trim().split(/\s+/);
+    let bestLines = [text];
+    let bestWidth = Infinity;
+    for (let split = 1; split < words.length; split++) {
+        const first = words.slice(0, split).join(' ');
+        const second = words.slice(split).join(' ');
+        const width = Math.max(measure(first), measure(second));
+        if (width < bestWidth) {
+            bestWidth = width;
+            bestLines = [first, second];
+        }
+    }
+    return bestLines;
 }
