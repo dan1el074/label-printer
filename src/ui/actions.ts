@@ -5,6 +5,8 @@ let showDialog: boolean = true;
 
 ipcRenderer.on('app/setBusy', (_event: any, busy: boolean): void => setBusy(busy));
 
+ipcRenderer.on('action/showConfig', (): void => showVariablesPage());
+
 ipcRenderer.on('app/setTitle', (_event: any, version: string): void => {
     appTitle.innerHTML += " v" + version;
     windowTitle.innerHTML += " v" + version;
@@ -15,7 +17,7 @@ ipcRenderer.on('action/closeDialog', (): void => {
 });
 
 ipcRenderer.on('action/reset', (_event: any, version: string): void => {
-    configPage.style.transform = 'translateX(100%)';
+    showPage('home');
 });
 
 ipcRenderer.on('set/fileName', (_event: any, data: string): void => {
@@ -58,6 +60,7 @@ ipcRenderer.on('set/modelConfig', (_event: any, data: PrintModel): void => {
 
         labelContent = labelContent.charAt(0).toUpperCase() + labelContent.slice(1);
         if (data.source === 'foccoerp' && data.variables[i].name === 'cod_item') labelContent = 'Código do item no ERP';
+        if (data.source === 'foccoerp-venda' && data.variables[i].name === 'pedido') labelContent = 'Número do pedido no ERP';
 
         if (data.variables[i].max > 1) {
             trashContent = `
@@ -93,6 +96,7 @@ ipcRenderer.on('set/modelConfig', (_event: any, data: PrintModel): void => {
 
     getTrashButtonList();
     getAddButtonList();
+    focusVariablesAfterBusy = true;
     setBusy(isBusy);
 });
 

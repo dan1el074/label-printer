@@ -1,6 +1,6 @@
 {
     "name": "imprime-etiquetas",
-    "version": "2.0.1",
+    "version": "2.1.1",
     "description": "Software desktop que tem como objetivo imprimir etiquetas de diversos tipos e tamanhos",
     "main": "main.js",
     "scripts": {

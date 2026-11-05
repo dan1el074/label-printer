@@ -3,7 +3,7 @@ import { Window } from '../app/models/Window';
 import { log, getSpan } from '../app/services/logService';
 import { getPrinters } from '../app/services/printerService';
 import { createLabel, openFile } from '../app/services/pdfService';
-import { getFoccoItem } from '../app/services/foccoService';
+import { getFoccoItem, getFoccoSale } from '../app/services/foccoService';
 import { randomUUID } from 'crypto';
 import * as path from 'path';
 import fs = require('fs/promises');
@@ -102,7 +102,11 @@ export class Application {
                 })
             );
 
-            const modelsName = this.data.modelList.map(currentModel => currentModel.title)
+            this.data.modelList.sort((first, second) => first.title.localeCompare(second.title, 'pt-BR', {
+                sensitivity: 'base',
+                numeric: true
+            }));
+            const modelsName = this.data.modelList.map(currentModel => currentModel.title);
 
             this.actionFromBackend('set/models', modelsName);
         } catch (error) {
@@ -288,13 +292,28 @@ export class Application {
                 throw new Error('Informe uma quantidade de cópias entre 1 e 9999.');
             }
             const model: PrintModel = JSON.parse(JSON.stringify(this.data.selectModel));
-            if (model.source === 'foccoerp') {
-                const itemCode = model.variables.find(variable => variable.name === 'cod_item')?.value?.[0];
-                const item = await getFoccoItem(itemCode, this.configData.foccoErpKey, this.configData.foccoErpBearerToken);
-                model.variables.push(
-                    { name: 'desc_tecnica', value: [item.desc_tecnica] },
-                    { name: 'cod_barra', value: [item.cod_barra] }
-                );
+            try {
+                if (model.source === 'foccoerp-venda') {
+                    const orderNumber = model.variables.find(variable => variable.name === 'pedido')?.value?.[0];
+                    const sale = await getFoccoSale(orderNumber, this.configData.foccoErpKey, this.configData.foccoErpBearerToken);
+                    model.variables = model.variables.filter(variable => !['cliente', 'destino'].includes(variable.name));
+                    model.variables.push(
+                        { name: 'cliente', value: [sale.cliente] },
+                        { name: 'destino', value: [sale.cidade] }
+                    );
+                }
+                if (model.source === 'foccoerp') {
+                    const itemCode = model.variables.find(variable => variable.name === 'cod_item')?.value?.[0];
+                    const item = await getFoccoItem(itemCode, this.configData.foccoErpKey, this.configData.foccoErpBearerToken);
+                    model.variables.push(
+                        { name: 'desc_tecnica', value: [item.desc_tecnica] },
+                        { name: 'cod_barra', value: [item.cod_barra] }
+                    );
+                }
+            } catch (error) {
+                // Preserve the entered variables so the user can correct them and retry.
+                this.actionFromBackend('action/showConfig');
+                throw error;
             }
             const filePath = path.join(this.data.temporaryPath, 'temp_' + randomUUID() + '.pdf');
             await createLabel(model, filePath, copyNumber);

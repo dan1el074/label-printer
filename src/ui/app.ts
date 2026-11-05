@@ -18,6 +18,25 @@ let trashButtonList: NodeListOf<HTMLElement>;
 let addButtonList: NodeListOf<HTMLElement>;
 let printModel: PrintModel;
 let isBusy = false;
+let currentPage: 'home' | 'config' | 'print' = 'home';
+let focusVariablesAfterBusy = false;
+let isNavigating = false;
+let navigationTimer: ReturnType<typeof setTimeout>;
+
+function showPage(page: 'home' | 'config' | 'print'): void {
+    if (currentPage === page) return;
+    currentPage = page;
+    isNavigating = true;
+    clearTimeout(navigationTimer);
+    navigationTimer = setTimeout(() => isNavigating = false, 350);
+    configPage.style.transform = page === 'home' ? 'translateX(0)' : 'translateX(-100%)';
+    printPage.style.transform = page === 'print' ? 'translateX(-100%)' : 'translateX(0)';
+    document.querySelectorAll<HTMLElement>('section').forEach(section => {
+        const active = section.classList.contains(page === 'config' ? 'config-page' : page === 'print' ? 'print-page' : 'home');
+        section.toggleAttribute('inert', !active);
+        section.setAttribute('aria-hidden', String(!active));
+    });
+}
 
 function setBusy(busy: boolean): void {
     isBusy = busy;
@@ -27,7 +46,31 @@ function setBusy(busy: boolean): void {
     inputSearch.style.pointerEvents = busy ? 'none' : '';
     document.body.setAttribute('aria-busy', String(busy));
     printBtn.querySelector('span').textContent = busy ? 'Processando...' : 'Imprimir';
+    if (!busy && focusVariablesAfterBusy) {
+        focusVariablesAfterBusy = false;
+        if (currentPage === 'config') focusVariableInput();
+    }
 }
+
+function focusVariableInput(): void {
+    const input = variablesContainer.querySelector<HTMLInputElement>('input');
+    (input || printPageBtn).focus({ preventScroll: true });
+}
+
+// Capture shortcuts before focused controls can also trigger their native actions.
+document.addEventListener('keydown', (event: KeyboardEvent): void => {
+    if (!['Enter', 'Escape'].includes(event.key) || event.isComposing || event.ctrlKey || event.altKey || event.metaKey) return;
+    if (currentPage === 'home') return;
+    event.preventDefault();
+    if (event.repeat || isBusy || isNavigating) return;
+    if (event.key === 'Escape') {
+        if (currentPage === 'print') previousConfigBtn.click();
+        else previousHomeBtn.click();
+        return;
+    }
+    if (currentPage === 'config') printPageBtn.click();
+    else printBtn.click();
+}, true);
 
 function sendOperation(route: string, data?: any): void {
     if (isBusy) return;
@@ -130,7 +173,7 @@ inputSearch.addEventListener('click', () => {
 });
 
 configPageBtn.addEventListener('click', async () => {
-    if (isBusy) return;
+    if (isBusy || isNavigating || currentPage !== 'home') return;
     const fileName = document.getElementById('new-placeholder').innerHTML;
 
     if(!fileName && modelSelect.value == "none") {
@@ -149,7 +192,7 @@ configPageBtn.addEventListener('click', async () => {
         sendOperation('action/getConfigInput', modelSelect.value);
     }
 
-    configPage.style.transform = 'translateX(-100%)';
+    showPage('config');
 
     modelSelect.tabIndex = -1;
     searchBtn.tabIndex = -1;
@@ -163,9 +206,9 @@ configPageBtn.addEventListener('click', async () => {
 });
 
 previousHomeBtn.addEventListener('click', () => {
-    if (isBusy) return;
+    if (isBusy || isNavigating || currentPage !== 'config') return;
     ipcRenderer.send('action/reset');
-    configPage.style.transform = 'translateX(100%)';
+    showPage('home');
     previousHomeBtn.blur();
 
     modelSelect.tabIndex = 0;
@@ -176,11 +219,12 @@ previousHomeBtn.addEventListener('click', () => {
 
     printModel = undefined;
     variablesContainer.innerHTML = "";
+    modelSelect.focus({ preventScroll: true });
 })
 
 printPageBtn.addEventListener('click', () => {
-    if (isBusy || !printModel) return;
-    printPage.style.transform = 'translateX(-100%)';
+    if (isBusy || isNavigating || currentPage !== 'config' || !printModel) return;
+    showPage('print');
 
     const inputList: NodeListOf<HTMLInputElement> = document.querySelectorAll(`.config-container input`);
     const addButton: HTMLElement = document.querySelector('.add');
@@ -198,11 +242,16 @@ printPageBtn.addEventListener('click', () => {
     printBtn.tabIndex = 0;
 
     verifyInputs();
+    printerSelect.focus({ preventScroll: true });
 })
 
 previousConfigBtn.addEventListener('click', () => {
-    if (isBusy) return;
-    printPage.style.transform = 'translateX(100%)';
+    if (isBusy || isNavigating || currentPage !== 'print') return;
+    showVariablesPage();
+})
+
+function showVariablesPage(): void {
+    showPage('config');
 
     const inputList: NodeListOf<HTMLInputElement> = document.querySelectorAll(`.config-container input`);
     const addButton: HTMLElement = document.querySelector('.add');
@@ -218,10 +267,12 @@ previousConfigBtn.addEventListener('click', () => {
     printerSelect.tabIndex = -1;
     copyInput.tabIndex = -1;
     printBtn.tabIndex = -1;
-})
+    if (isBusy) focusVariablesAfterBusy = true;
+    else focusVariableInput();
+}
 
 printBtn.addEventListener('click', () => {
-    if (isBusy) return;
+    if (isBusy || isNavigating || currentPage !== 'print') return;
     if (!printerSelect.value || !copyInput.reportValidity()) return;
     sendOperation('app/start', [printerSelect.value, copyInput.value]);
 });

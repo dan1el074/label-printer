@@ -1,0 +1,29 @@
+{
+    "title": "100x70 - Identificação pedido",
+    "width": 100,
+    "height": 70,
+    "collumn": 1,
+    "source": "foccoerp-venda",
+    "variables": [
+        {"name": "pedido"},
+        {"name": "volumes"}
+    ],
+    "body": [
+        {"type": "svg", "value": "images/metaro.svg", "options": {"x": 66, "y": 8, "width": 30, "height": 6}},
+        {"type": "text", "label": "Pedido:", "value": "%pedido%", "options": {"valueFontSize": 40}},
+        {"type": "text", "label": "Cliente:", "value": "%cliente%", "options": {"ellipsis": true, "maxWidth": 62}},
+        {"type": "text", "label": "Cidade:", "value": "%destino%"},
+        {"type": "text", "label": "Volumes:", "value": "%volumes%"},
+        {"type": "text", "label": "DANFE:", "value": "", "options": {"writingBoxHeight": 8, "writingBoxWidth": 65}}
+    ],
+    "options": {
+        "layout": "table",
+        "labelAlignment": "right",
+        "columnGap": 10,
+        "fontSize": 12,
+        "bold": true,
+        "lineHeight": 22,
+        "marginLeft": -60,
+        "marginTop": 38
+    }
+}
